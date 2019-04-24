@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+<plugin>
+
+   <!-- This is an example for providing an own category -->
+      <extension
+            id="orientdb-category"
+            name="OrientDB"
+            point="org.knime.workbench.repository.categories">
+     <category
+           description="OrientDB"
+           icon="icons/orientdb.gif"
+           level-id="orientdb"
+           name="OrientDB"
+           path="/"/>       
+            
+   </extension>
+   
+   
+   <extension
+         point="org.knime.workbench.repository.nodes">
+      <node
+            category-path="/orientdb"
+            factory-class="se.redfield.node.port.orientdb.query.OrientDBQueryNodeFactory"/>
+      <node
+            category-path="/orientdb"
+            factory-class="se.redfield.node.port.orientdb.connection.OrientDBConnectionNodeFactory"/>
+       <node
+            category-path="/orientdb"
+            factory-class="se.redfield.node.port.orientdb.command.OrientDBCommandNodeFactory"/>
+       <node
+            category-path="/orientdb"
+            factory-class="se.redfield.node.port.orientdb.execute.OrientDBExecuteNodeFactory"/>
+       <node
+            category-path="/orientdb"
+            factory-class="se.redfield.node.port.orientdb.function.OrientDBFunctionNodeFactory"/>
+   </extension>
+   
+</plugin>

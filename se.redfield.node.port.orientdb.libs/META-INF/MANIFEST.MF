@@ -1,7 +1,0 @@
-Manifest-Version: 1.0
-Bundle-ManifestVersion: 2
-Bundle-Name: Libs
-Bundle-SymbolicName: se.redfield.node.port.orientdb.libs
-Bundle-Version: 1.0.0.qualifier
-Automatic-Module-Name: se.redfield.node.port.orientdb.libs
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8

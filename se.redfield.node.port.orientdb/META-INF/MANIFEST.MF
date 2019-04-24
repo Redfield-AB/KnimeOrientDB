@@ -1,7 +1,27 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: Orientdb
-Bundle-SymbolicName: se.redfield.node.port.orientdb
-Bundle-Version: 1.0.0.qualifier
-Automatic-Module-Name: se.redfield.node.port.orientdb
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-Name: OrientDB extension nodes
+Bundle-SymbolicName: se.redfield.node.port.orientdb;singleton:=true
+Bundle-Version: 2.0.72
+Bundle-ClassPath: orientdbselect.jar,
+ lib/concurrentlinkedhashmap-lru-1.4.2.jar,
+ lib/groovy-all-2.4.9.jar,
+ lib/nashorn.jar,
+ lib/orientdb-client-3.0.17.jar,
+ lib/orientdb-core-3.0.17.jar
+Bundle-Activator: se.redfield.node.port.orientdb.OrientDBPlugin
+Bundle-Vendor: Redfield AB
+Require-Bundle: org.eclipse.core.runtime,
+ org.knime.workbench.core,
+ org.knime.workbench.repository,
+ org.knime.base,
+ org.knime.json,
+ org.knime.time;bundle-version="3.7.1",
+ org.junit;bundle-version="4.12.0",
+ com.sun.jna;bundle-version="4.4.0"
+Bundle-ActivationPolicy: lazy
+Export-Package: se.redfield.node.port.orientdb
+Import-Package: 
+ com.sun.jna,
+ com.sun.jna.ptr
+

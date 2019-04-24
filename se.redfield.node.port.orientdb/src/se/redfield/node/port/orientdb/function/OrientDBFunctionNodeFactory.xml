@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<knimeNode icon="orientdb.png" type="Sink"
+	xmlns="http://knime.org/node/v2.8"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://knime.org/node/v2.10 http://knime.org/node/v2.10.xsd">
+	<name>OrientDB Function</name>
+	<shortDescription>
+		execute functions on OrientDB
+	</shortDescription>
+
+	<fullDescription>
+		<intro>
+			Node is used for a database function call. Connected database must have any user defined functions. More information: https://orientdb.com/docs/last/Functions.html
+		</intro>
+		<option name="Functions">List of functions defined for the connected database.</option>
+		<option name="List of arguments">Dynamic list of arguments, input table or Flow variables can be used as the wildcards.</option>
+	</fullDescription>
+	<ports>
+		<inPort index="0" name="Input Flow variables">Input Flow variables.</inPort>
+		<inPort index="1" name="Input data table">Input data table.</inPort>
+		<inPort index="2" name="OrientDB connection">OrientDB Connection.</inPort>
+		<outPort index="0" name="Output data table">Output data table.</outPort>
+		<outPort index="1" name="OrientDB connection">OrientDB Connection.</outPort>
+	</ports>
+</knimeNode>
