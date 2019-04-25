@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
-      id="se.redfield.node.port.orientdb.feature"
-      label="Feature"
-      version="2.0.72"
-      provider-name="Redfield AB">
+      id="se.redfield.node.port.orientdb.update"
+      label="Update"
+      version="2.0.72">
 
    <description url="http://www.example.com/description">
       [Enter Feature Description here.]
