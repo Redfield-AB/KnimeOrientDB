@@ -436,10 +436,6 @@ public class OrientDBCommandNodeModel extends NodeModel implements FlowVariableP
 					LocalDateCell cell = (LocalDateCell) dataRow.getCell(index);
 					LocalDate localDate = cell.getLocalDate();
 					saveElement.setProperty(columnName, DateTimeUtils.toDate(localDate), OType.DATETIME);
-				} else if (dataType.equals(DataType.getType(LocalDateCell.class))) {
-					LocalDateCell cell = (LocalDateCell) dataRow.getCell(index);
-					LocalDate localDate = cell.getLocalDate();
-					saveElement.setProperty(columnName, DateTimeUtils.toDate(localDate), OType.DATETIME);
 				} else if (dataType.equals(DataType.getType(ZonedDateTimeCell.class))) {
 					ZonedDateTimeCell cell = (ZonedDateTimeCell) dataRow.getCell(index);
 					ZonedDateTime zonedDateTime = cell.getZonedDateTime();
