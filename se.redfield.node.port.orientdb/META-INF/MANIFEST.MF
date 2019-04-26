@@ -21,7 +21,4 @@ Require-Bundle: org.eclipse.core.runtime,
  com.sun.jna;bundle-version="4.4.0"
 Bundle-ActivationPolicy: lazy
 Export-Package: se.redfield.node.port.orientdb
-Import-Package: 
- com.sun.jna,
- com.sun.jna.ptr
 
