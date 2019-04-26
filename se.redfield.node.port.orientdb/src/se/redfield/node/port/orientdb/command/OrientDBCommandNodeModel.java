@@ -380,7 +380,7 @@ public class OrientDBCommandNodeModel extends NodeModel implements FlowVariableP
 		}
 	}
 	private boolean isParallelExecution() {
-		return this.m_execution.equals(USE_PARALLEL_EXECUTION);
+		return this.m_execution.getStringValue().equals(USE_PARALLEL_EXECUTION);
 	}
     
     private String prepareErrorMessage(Exception e) {
