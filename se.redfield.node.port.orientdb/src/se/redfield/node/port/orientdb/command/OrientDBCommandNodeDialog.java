@@ -302,6 +302,7 @@ public class OrientDBCommandNodeDialog extends AbstractOrientDBNodeDialogPane {
 
 	}
 
+	@Override
 	public final void loadSettingsFrom(final NodeSettingsRO settings, final PortObjectSpec[] specs)
 			throws NotConfigurableException {
 		

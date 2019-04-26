@@ -380,7 +380,7 @@ public class OrientDBCommandNodeModel extends NodeModel implements FlowVariableP
 		}
 	}
 	private boolean isParallelExecution() {
-		return this.m_execution.equals(USE_PARALLEL_EXECUTION);
+		return this.m_execution.getStringValue().equals(USE_PARALLEL_EXECUTION);
 	}
     
     private String prepareErrorMessage(Exception e) {
@@ -432,10 +432,6 @@ public class OrientDBCommandNodeModel extends NodeModel implements FlowVariableP
 					LocalDateTimeCell cell = (LocalDateTimeCell) dataRow.getCell(index);
 					LocalDateTime localDateTime = cell.getLocalDateTime();
 					saveElement.setProperty(columnName, DateTimeUtils.toDate(localDateTime), OType.DATETIME);
-				} else if (dataType.equals(DataType.getType(LocalDateCell.class))) {
-					LocalDateCell cell = (LocalDateCell) dataRow.getCell(index);
-					LocalDate localDate = cell.getLocalDate();
-					saveElement.setProperty(columnName, DateTimeUtils.toDate(localDate), OType.DATETIME);
 				} else if (dataType.equals(DataType.getType(LocalDateCell.class))) {
 					LocalDateCell cell = (LocalDateCell) dataRow.getCell(index);
 					LocalDate localDate = cell.getLocalDate();

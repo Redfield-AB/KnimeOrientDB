@@ -12,7 +12,7 @@
            icon="icons/orientdb.gif"
            level-id="orientdb"
            name="OrientDB"
-           path="/"/>       
+           path="/community/"/>       
             
    </extension>
    
@@ -20,19 +20,19 @@
    <extension
          point="org.knime.workbench.repository.nodes">
       <node
-            category-path="/orientdb"
+            category-path="/community/orientdb"
             factory-class="se.redfield.node.port.orientdb.query.OrientDBQueryNodeFactory"/>
       <node
-            category-path="/orientdb"
+            category-path="/community/orientdb"
             factory-class="se.redfield.node.port.orientdb.connection.OrientDBConnectionNodeFactory"/>
        <node
-            category-path="/orientdb"
+            category-path="/community/orientdb"
             factory-class="se.redfield.node.port.orientdb.command.OrientDBCommandNodeFactory"/>
        <node
-            category-path="/orientdb"
+            category-path="/community/orientdb"
             factory-class="se.redfield.node.port.orientdb.execute.OrientDBExecuteNodeFactory"/>
        <node
-            category-path="/orientdb"
+            category-path="/community/orientdb"
             factory-class="se.redfield.node.port.orientdb.function.OrientDBFunctionNodeFactory"/>
    </extension>
    
