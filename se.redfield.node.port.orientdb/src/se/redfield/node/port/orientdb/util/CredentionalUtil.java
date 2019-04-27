@@ -20,6 +20,9 @@ public class CredentionalUtil {
 			CredentialsProvider credentialsProvider) throws InvalidSettingsException {
 		String decryptedPassword = null;
 		String login = null;
+		if ( (userName==null && password==null ) || (credentionalName==null)) {
+			throw new InvalidSettingsException("No data for login to database! Please configure username and password or credentional!");			
+		}
 
 		if (OrientDBConnectionNodeModel.DEFAULT_CREDENTIONAL_NAME.equals(credentionalName)) {
 			if (isBase64(password)) {
