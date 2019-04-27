@@ -2,7 +2,8 @@
 <feature
       id="se.redfield.node.port.orientdb.testing"
       label="Testing"
-      version="1.0.0.qualifier"
+      version="2.0.72"
+      provider-name="Redfield AB"
       plugin="se.redfield.node.port.orientdb">
 
    <description url="http://www.example.com/description">
