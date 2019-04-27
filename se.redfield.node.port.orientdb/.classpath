@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
+	<classpathentry exported="true" kind="lib" path="lib/groovy-all-2.4.9.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/concurrentlinkedhashmap-lru-1.4.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/nashorn.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/orientdb-client-3.0.17.jar"/>
