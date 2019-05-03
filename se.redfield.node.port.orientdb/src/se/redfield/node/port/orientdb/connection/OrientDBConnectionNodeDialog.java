@@ -1,25 +1,11 @@
 package se.redfield.node.port.orientdb.connection;
 
-import static se.redfield.node.port.orientdb.connection.OrientDBConnectionNodeModel.CFGKEY_CREDENTIONAL_NAME;
-import static se.redfield.node.port.orientdb.connection.OrientDBConnectionNodeModel.CFGKEY_DB_URL;
-import static se.redfield.node.port.orientdb.connection.OrientDBConnectionNodeModel.CFGKEY_PASSWORD;
-import static se.redfield.node.port.orientdb.connection.OrientDBConnectionNodeModel.CFGKEY_POOL_SIZE;
-import static se.redfield.node.port.orientdb.connection.OrientDBConnectionNodeModel.CFGKEY_REMOTE_DATABASE_NAME;
-import static se.redfield.node.port.orientdb.connection.OrientDBConnectionNodeModel.CFGKEY_USER_NAME;
-import static se.redfield.node.port.orientdb.connection.OrientDBConnectionNodeModel.DEFAULT_DB_NAME;
-import static se.redfield.node.port.orientdb.connection.OrientDBConnectionNodeModel.DEFAULT_DB_URL;
-import static se.redfield.node.port.orientdb.connection.OrientDBConnectionNodeModel.DEFAULT_PASSWORD;
-import static se.redfield.node.port.orientdb.connection.OrientDBConnectionNodeModel.DEFAULT_POOL_SIZE;
-import static se.redfield.node.port.orientdb.connection.OrientDBConnectionNodeModel.DEFAULT_USERNAME;
-import static se.redfield.node.port.orientdb.connection.OrientDBConnectionNodeModel.MAX_POOL_SIZE;
-import static se.redfield.node.port.orientdb.connection.OrientDBConnectionNodeModel.MIN_POOL_SIZE;
-import static se.redfield.node.port.orientdb.connection.OrientDBConnectionNodeModel.DEFAULT_CREDENTIONAL_NAME;
+import static se.redfield.node.port.orientdb.connection.OrientDBConnectionNodeModel.*;
 
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.knime.core.data.DataTableSpec;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NotConfigurableException;
@@ -36,11 +22,10 @@ public class OrientDBConnectionNodeDialog extends DefaultNodeSettingsPane {
 	private static final NodeLogger logger = NodeLogger.getLogger(OrientDBConnectionNodeDialog.class);
 	private DialogComponentStringSelection componentStringSelection = null;
 
+	@SuppressWarnings("deprecation")
 	protected OrientDBConnectionNodeDialog() {
 		super();
-		// DialogComponentAuthentication
-		// DialogComponentPasswordField
-		// DialogComponentMultiLineString
+		
 
 		addDialogComponent(new DialogComponentNumber(
 				new SettingsModelIntegerBounded(CFGKEY_POOL_SIZE, DEFAULT_POOL_SIZE, MIN_POOL_SIZE, MAX_POOL_SIZE),
@@ -53,7 +38,6 @@ public class OrientDBConnectionNodeDialog extends DefaultNodeSettingsPane {
 				CFGKEY_USER_NAME));
 		addDialogComponent(new DialogComponentPasswordField(new SettingsModelString(CFGKEY_PASSWORD, DEFAULT_PASSWORD),
 				CFGKEY_PASSWORD));
-
 		componentStringSelection = new DialogComponentStringSelection(
 				new SettingsModelString(CFGKEY_CREDENTIONAL_NAME, DEFAULT_CREDENTIONAL_NAME), CFGKEY_CREDENTIONAL_NAME,
 				Arrays.asList("1","2"), false);

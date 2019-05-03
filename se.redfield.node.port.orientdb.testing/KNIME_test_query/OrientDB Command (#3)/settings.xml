@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns="http://www.knime.org/2008/09/XMLConfig" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.knime.org/2008/09/XMLConfig http://www.knime.org/XMLConfig_2008_09.xsd" key="settings.xml">
+<entry key="node_file" type="xstring" value="settings.xml"/>
+<config key="flow_stack">
+<config key="Variable_0">
+<entry key="type" type="xstring" value="variable"/>
+<entry key="name" type="xstring" value="command_result"/>
+<entry key="class" type="xstring" value="STRING"/>
+<entry key="value" type="xstring" value="{&quot;@type&quot;:&quot;d&quot;,&quot;@rid&quot;:&quot;#17:0&quot;,&quot;@version&quot;:1,&quot;@class&quot;:&quot;person&quot;,&quot;name&quot;:&quot;vasia&quot;}"/>
+</config>
+</config>
+<config key="internal_node_subsettings">
+<entry key="memory_policy" type="xstring" value="CacheSmallInMemory"/>
+</config>
+<config key="model">
+<config key="Mode_Internals">
+<entry key="SettingsModelID" type="xstring" value="SMID_string"/>
+<entry key="EnabledStatus" type="xboolean" value="true"/>
+</config>
+<entry key="Mode" type="xstring" value="Use SQL statement"/>
+<config key="Execution_Internals">
+<entry key="SettingsModelID" type="xstring" value="SMID_string"/>
+<entry key="EnabledStatus" type="xboolean" value="false"/>
+</config>
+<entry key="Execution" type="xstring" value="Use parallel execution"/>
+<config key="Command_Internals">
+<entry key="SettingsModelID" type="xstring" value="SMID_string"/>
+<entry key="EnabledStatus" type="xboolean" value="true"/>
+</config>
+<entry key="Command" type="xstring" value="insert into person(name) values(&quot;vasia&quot;)"/>
+<config key="Class_Internals">
+<entry key="SettingsModelID" type="xstring" value="SMID_string"/>
+<entry key="EnabledStatus" type="xboolean" value="false"/>
+</config>
+<entry key="Class" type="xstring" isnull="true" value=""/>
+<config key="Column with command_Internals">
+<entry key="SettingsModelID" type="xstring" value="SMN_string_disact"/>
+<entry key="EnabledStatus" type="xboolean" value="false"/>
+</config>
+<entry key="Column with command" type="xstring" isnull="true" value=""/>
+<entry key="Column with command_BOOL" type="xboolean" value="false"/>
+<config key="Fields_Internals">
+<entry key="SettingsModelID" type="xstring" value="SMID_filterString"/>
+<entry key="EnabledStatus" type="xboolean" value="false"/>
+</config>
+<config key="Fields">
+<config key="InclList">
+<entry key="array-size" type="xint" value="0"/>
+</config>
+<config key="ExclList">
+<entry key="array-size" type="xint" value="0"/>
+</config>
+<entry key="keep_all_columns_selected" type="xboolean" value="false"/>
+</config>
+<entry key="dbUrl" type="xstring" isnull="true" value=""/>
+<entry key="dbName" type="xstring" isnull="true" value=""/>
+<entry key="userName" type="xstring" isnull="true" value=""/>
+<entry key="password" type="xstring" value="admin"/>
+<entry key="credential_name" type="xstring" isnull="true" value=""/>
+<entry key="poolsize" type="xint" value="10"/>
+<config key="Use upsert_Internals">
+<entry key="SettingsModelID" type="xstring" value="SMID_boolean"/>
+<entry key="EnabledStatus" type="xboolean" value="false"/>
+</config>
+<entry key="Use upsert" type="xboolean" value="true"/>
+</config>
+<entry key="customDescription" type="xstring" isnull="true" value=""/>
+<entry key="state" type="xstring" value="EXECUTED"/>
+<entry key="factory" type="xstring" value="se.redfield.node.port.orientdb.command.OrientDBCommandNodeFactory"/>
+<entry key="node-name" type="xstring" value="OrientDB Command"/>
+<entry key="node-bundle-name" type="xstring" value="OrientDB extension nodes"/>
+<entry key="node-bundle-symbolic-name" type="xstring" value="se.redfield.node.port.orientdb"/>
+<entry key="node-bundle-vendor" type="xstring" value="Redfield AB"/>
+<entry key="node-bundle-version" type="xstring" value="2.0.80"/>
+<entry key="node-feature-name" type="xstring" isnull="true" value=""/>
+<entry key="node-feature-symbolic-name" type="xstring" isnull="true" value=""/>
+<entry key="node-feature-vendor" type="xstring" isnull="true" value=""/>
+<entry key="node-feature-version" type="xstring" value="0.0.0"/>
+<config key="factory_settings"/>
+<entry key="name" type="xstring" value="OrientDB Command"/>
+<entry key="hasContent" type="xboolean" value="true"/>
+<entry key="isInactive" type="xboolean" value="false"/>
+<config key="ports">
+<config key="port_1">
+<entry key="index" type="xint" value="1"/>
+<entry key="port_spec_class" type="xstring" value="org.knime.core.node.port.flowvariable.FlowVariablePortObjectSpec"/>
+<entry key="port_object_class" type="xstring" value="org.knime.core.node.port.flowvariable.FlowVariablePortObject"/>
+<entry key="port_object_summary" type="xstring" value="Variables connection"/>
+<entry key="port_spec_location" type="xstring" value="spec/spec.zip"/>
+<entry key="port_object_location" type="xstring" value="object/portobject.zip"/>
+<entry key="port_dir_location" type="xstring" value="port_1"/>
+</config>
+<config key="port_2">
+<entry key="index" type="xint" value="2"/>
+<entry key="port_spec_class" type="xstring" value="org.knime.core.data.DataTableSpec"/>
+<entry key="port_object_class" type="xstring" value="org.knime.core.node.BufferedDataTable"/>
+<entry key="port_object_summary" type="xstring" value="Rows: 1, Cols: 1"/>
+<entry key="port_dir_location" type="xstring" value="port_2"/>
+</config>
+<config key="port_3">
+<entry key="index" type="xint" value="3"/>
+<entry key="port_spec_class" type="xstring" value="se.redfield.node.port.orientdb.connection.OrientDBConnectionPortObjectSpec"/>
+<entry key="port_object_class" type="xstring" value="se.redfield.node.port.orientdb.connection.OrientDBConnectionPortObject"/>
+<entry key="port_object_summary" type="xstring" value="OrientDB:OrientDBConnectionPortObject"/>
+<entry key="port_spec_location" type="xstring" value="spec/spec.zip"/>
+<entry key="port_object_location" type="xstring" value="object/portobject.zip"/>
+<entry key="port_dir_location" type="xstring" value="port_3"/>
+</config>
+</config>
+<config key="filestores">
+<entry key="file_store_location" type="xstring" isnull="true" value=""/>
+<entry key="file_store_id" type="xstring" value="7a719f9f-b7ef-4d35-99a2-4109db467ca9"/>
+</config>
+</config>

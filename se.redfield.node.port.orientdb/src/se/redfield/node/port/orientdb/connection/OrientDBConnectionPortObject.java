@@ -14,10 +14,7 @@ import org.knime.core.node.port.PortObjectZipInputStream;
 import org.knime.core.node.port.PortObjectZipOutputStream;
 import org.knime.core.node.port.PortType;
 import org.knime.core.node.port.PortTypeRegistry;
-import org.knime.core.node.port.PortObjectSpec.PortObjectSpecSerializer;
 import org.knime.core.node.workflow.CredentialsProvider;
-
-import se.redfield.node.port.orientdb.connection.OrientDBConnectionPortObjectSpec.Serializer;
 
 public class OrientDBConnectionPortObject implements PortObject {
 	private static final NodeLogger logger = NodeLogger.getLogger(OrientDBConnectionPortObject.class);

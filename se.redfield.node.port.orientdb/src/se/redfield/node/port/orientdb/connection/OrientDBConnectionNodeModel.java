@@ -13,12 +13,14 @@ import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.defaultnodesettings.SettingsModelIntegerBounded;
 import org.knime.core.node.defaultnodesettings.SettingsModelString;
+import org.knime.core.node.defaultnodesettings.SettingsModelStringArray;
 import org.knime.core.node.port.PortObject;
 import org.knime.core.node.port.PortObjectSpec;
 import org.knime.core.node.port.PortType;
 
 import com.orientechnologies.orient.core.db.ODatabasePool;
 import com.orientechnologies.orient.core.db.ODatabaseSession;
+import com.orientechnologies.orient.core.db.ODatabaseType;
 import com.orientechnologies.orient.core.db.OrientDB;
 import com.orientechnologies.orient.core.db.OrientDBConfig;
 
@@ -34,7 +36,7 @@ public class OrientDBConnectionNodeModel extends NodeModel {
 	public static final String CFGKEY_USER_NAME = "Username";
 	public static final String CFGKEY_PASSWORD = "Password";
 	public static final String CFGKEY_CREDENTIONAL_NAME = "Credential name";
-
+	
 	public static final int DEFAULT_POOL_SIZE = 10;
 	public static final int MIN_POOL_SIZE = 1;
 	public static final int MAX_POOL_SIZE = 100;
@@ -88,17 +90,23 @@ public class OrientDBConnectionNodeModel extends NodeModel {
 		OrientDB orientDBEnv = new OrientDB(m_db_url.getStringValue(), userLogin.getLogin(),
 				userLogin.getDecryptedPassword(), OrientDBConfig.defaultConfig());
 		
-		ODatabasePool orientDBPool = new ODatabasePool(orientDBEnv, m_remote_database_name.getStringValue(),
-				userLogin.getLogin(),
-				userLogin.getDecryptedPassword());
-		try (ODatabaseSession databaseSession = orientDBPool.acquire()) {
-			logger.infoWithFormat("database status : %s", databaseSession.getStatus());
-		} catch (Exception e) {
-			throw new InvalidSettingsException("Can't connect to database. Check parameters or database availability !",
-					e);
-		} finally {
-			orientDBPool.close();
-			orientDBEnv.close();
+		if (m_db_url.getStringValue().startsWith("memory")) {
+			orientDBEnv.createIfNotExists(m_remote_database_name.getStringValue(), ODatabaseType.MEMORY);			
+		} else if (m_db_url.getStringValue().startsWith("plocal") || m_db_url.getStringValue().startsWith("embedded")) {
+			orientDBEnv.createIfNotExists(m_remote_database_name.getStringValue(), ODatabaseType.PLOCAL);			
+		}
+				
+		try (ODatabasePool orientDBPool = new ODatabasePool(m_db_url.getStringValue(), m_remote_database_name.getStringValue(),
+				userLogin.getLogin(), userLogin.getDecryptedPassword())) {
+			try (ODatabaseSession databaseSession = orientDBPool.acquire()) {
+				logger.infoWithFormat("database status : %s", databaseSession.getStatus());
+			} catch (Exception e) {
+				throw new InvalidSettingsException(
+						"Can't connect to database. Check parameters or database availability !", e);
+			} finally {
+				orientDBPool.close();
+				orientDBEnv.close();
+			}
 		}
 	}
 

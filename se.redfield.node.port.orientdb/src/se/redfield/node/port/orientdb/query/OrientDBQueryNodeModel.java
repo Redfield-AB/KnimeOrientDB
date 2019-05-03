@@ -123,137 +123,132 @@ public class OrientDBQueryNodeModel extends NodeModel implements FlowVariablePro
      * {@inheritDoc}
      */
     @Override
-	protected PortObject[] execute(final PortObject[] inData, final ExecutionContext exec)
-			throws Exception {
-    	OrientDBConnectionPortObject orientDBConnectionPortObject = (OrientDBConnectionPortObject) inData[ORIENTDB_CONNECTION_INDEX];
-    	logger.infoWithFormat("orientDBConnectionPortObject: %s",orientDBConnectionPortObject);
-    	OrientDBConnectionSettings connectionSettings =  orientDBConnectionPortObject.getConnectionSettings(getCredentialsProvider());
-    	
+	protected PortObject[] execute(final PortObject[] inData, final ExecutionContext exec) throws Exception {
+		OrientDBConnectionPortObject orientDBConnectionPortObject = (OrientDBConnectionPortObject) inData[ORIENTDB_CONNECTION_INDEX];
+		logger.infoWithFormat("orientDBConnectionPortObject: %s", orientDBConnectionPortObject);
+		OrientDBConnectionSettings connectionSettings = orientDBConnectionPortObject
+				.getConnectionSettings(getCredentialsProvider());
+
 		logger.info("Try to create connection...");
-		
-		CredentionalUtil.UserLogin userLogin = CredentionalUtil.getUserLoginInfo(connectionSettings.getUserName(), connectionSettings.getPassword(),
-				connectionSettings.getCredName(), getCredentialsProvider());
-		OrientDB orientDBEnv = new OrientDB(connectionSettings.getDbUrl(), userLogin.getLogin(),
-				userLogin.getDecryptedPassword(), OrientDBConfig.defaultConfig());
-		ODatabasePool orientDBPool = new ODatabasePool(orientDBEnv, connectionSettings.getDbName(),
-				userLogin.getLogin(),
-				userLogin.getDecryptedPassword());
+
+		CredentionalUtil.UserLogin userLogin = CredentionalUtil.getUserLoginInfo(connectionSettings.getUserName(),
+				connectionSettings.getPassword(), connectionSettings.getCredName(), getCredentialsProvider());
 		BufferedDataContainer container = null;
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 		SimpleDateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.S");
 		AtomicLong rowCounter = new AtomicLong();
 		boolean useQueryFromTableColumn = (inData[DATA_TABLE_INDEX] != null);
 
-		DataTableSpec dataTableSpec = getConfiguredTableSpec();
-		container = exec.createDataContainer(dataTableSpec);
-		// show to log
-		logger.infoWithFormat("fields with type : %s ", Arrays.asList(dataTableSpec.getColumnNames()));
-		if (useQueryFromTableColumn) {
-			int maxConnections = isParallelExecution() ? Math.min(OrientDbUtil.getMaxPoolSize(),Runtime.getRuntime().availableProcessors()) : 1;
-			logger.infoWithFormat("Max connections: %s", maxConnections);
-			String columnWithQuery = m_column_with_query.getStringValue();
-			final int columnWithQueryIndex =  dataTableSpec.findColumnIndex(columnWithQuery);
-			logger.infoWithFormat("Column with query : %s , %s ", columnWithQuery,columnWithQueryIndex);
-			final int columnWithResultIndex =  dataTableSpec.findColumnIndex("result");
-			
-			Function<DataRow, Callable<DataRow>> convertToCallable = new Function<DataRow, Callable<DataRow>>() {
-				@Override
-				public Callable<DataRow> apply(DataRow currectDataRow) {
-					return new Callable<DataRow>() {
-						@Override
-						public DataRow call() throws Exception {
-							String query = currectDataRow.getCell(columnWithQueryIndex).toString();
-							logger.info("query : "+query);
-							StringBuilder stringBuilder = new StringBuilder(10_000);
-							stringBuilder.append("{\"result\":[");
-							try (ODatabaseSession databaseSession = orientDBPool.acquire()) {
-								try (OResultSet resultSet = databaseSession.query(query)) {
-									while (resultSet.hasNext()) {
-										stringBuilder.append(resultSet.next().toJSON());	
-										if (resultSet.hasNext()) {
-											stringBuilder.append(",");
+		try (ODatabasePool orientDBPool = new ODatabasePool(connectionSettings.getDbUrl(), connectionSettings.getDbName(),
+				userLogin.getLogin(), userLogin.getDecryptedPassword())) {
+
+			DataTableSpec dataTableSpec = getConfiguredTableSpec();
+			container = exec.createDataContainer(dataTableSpec);
+			// show to log
+			logger.infoWithFormat("fields with type : %s ", Arrays.asList(dataTableSpec.getColumnNames()));
+			if (useQueryFromTableColumn) {
+				int maxConnections = isParallelExecution()
+						? Math.min(OrientDbUtil.getMaxPoolSize(), Runtime.getRuntime().availableProcessors())
+						: 1;
+				logger.infoWithFormat("Max connections: %s", maxConnections);
+				String columnWithQuery = m_column_with_query.getStringValue();
+				final int columnWithQueryIndex = dataTableSpec.findColumnIndex(columnWithQuery);
+				logger.infoWithFormat("Column with query : %s , %s ", columnWithQuery, columnWithQueryIndex);
+				final int columnWithResultIndex = dataTableSpec.findColumnIndex("result");
+
+				Function<DataRow, Callable<DataRow>> convertToCallable = new Function<DataRow, Callable<DataRow>>() {
+					@Override
+					public Callable<DataRow> apply(DataRow currectDataRow) {
+						return new Callable<DataRow>() {
+							@Override
+							public DataRow call() throws Exception {
+								String query = currectDataRow.getCell(columnWithQueryIndex).toString();
+								logger.info("query : " + query);
+								StringBuilder stringBuilder = new StringBuilder(10_000);
+								stringBuilder.append("{\"result\":[");
+								try (ODatabaseSession databaseSession = orientDBPool.acquire()) {
+									try (OResultSet resultSet = databaseSession.query(query)) {
+										while (resultSet.hasNext()) {
+											stringBuilder.append(resultSet.next().toJSON());
+											if (resultSet.hasNext()) {
+												stringBuilder.append(",");
+											}
 										}
 									}
 								}
+								stringBuilder.append("]}");
+								List<DataCell> cells = new LinkedList<DataCell>();
+								currectDataRow.forEach(new Consumer<DataCell>() {
+									@Override
+									public void accept(DataCell t) {
+										cells.add(t);
+									}
+								});
+								// cells.remove(columnWithResultIndex);
+
+								cells.add(Constants.JSON_CELL_FACTORY.createCell(stringBuilder.toString()));
+								DataRow row = new DefaultRow(currectDataRow.getKey(), cells);
+								return row;
 							}
-							stringBuilder.append("]}");
-							List<DataCell> cells = new LinkedList<DataCell>();
-							currectDataRow.forEach(new Consumer<DataCell>() {
-								@Override
-								public void accept(DataCell t) {
-									cells.add(t);									
-								}
-							});
-//							cells.remove(columnWithResultIndex);
-								
-							
-							cells.add(Constants.JSON_CELL_FACTORY.createCell(stringBuilder.toString()));							
-							DataRow row = new DefaultRow(currectDataRow.getKey(), cells);
-							return row;
+						};
+					}
+				};
+
+				BufferedDataTable dataTable = (BufferedDataTable) inData[DATA_TABLE_INDEX];
+				long commandsCount = dataTable.size();
+				try (CloseableRowIterator rowItertor = dataTable.iterator()) {
+					List<DataRow> sourceDataRows = new ArrayList<DataRow>(maxConnections);
+					while (rowItertor.hasNext()) {
+						final DataRow dataRow = rowItertor.next();
+						sourceDataRows.add(dataRow);
+						if (sourceDataRows.size() == maxConnections) {
+							List<Callable<DataRow>> tasks = sourceDataRows.stream().map(convertToCallable)
+									.collect(Collectors.toList());
+							sourceDataRows.clear();
+							processTasks(tasks, rowCounter, commandsCount, exec, container);
 						}
-					};
-				}
-			};
-			
-			BufferedDataTable dataTable = (BufferedDataTable) inData[DATA_TABLE_INDEX];
-			long commandsCount = dataTable.size();
-			try (CloseableRowIterator rowItertor = dataTable.iterator()) {		
-				List<DataRow> sourceDataRows = new ArrayList<DataRow>(maxConnections);
-				while (rowItertor.hasNext()) {
-					final DataRow dataRow = rowItertor.next();
-					sourceDataRows.add(dataRow);
-					if (sourceDataRows.size() == maxConnections) {
+					}
+
+					if (!sourceDataRows.isEmpty()) {
+						logger.infoWithFormat("last partision: %s", sourceDataRows.size());
 						List<Callable<DataRow>> tasks = sourceDataRows.stream().map(convertToCallable)
 								.collect(Collectors.toList());
 						sourceDataRows.clear();
-						processTasks(tasks,rowCounter,commandsCount,exec,container);
-					}
-				}
-				
-				if (!sourceDataRows.isEmpty()) {
-					logger.infoWithFormat("last partision: %s", sourceDataRows.size());
-					List<Callable<DataRow>> tasks = sourceDataRows.stream().map(convertToCallable)
-							.collect(Collectors.toList());
-					sourceDataRows.clear();
-					processTasks(tasks,rowCounter,commandsCount,exec,container);
-					
-				}
-				container.close();
-			}
-			
-			
-			
-		} else {
-			try (ODatabaseSession databaseSession = orientDBPool.acquire()) {
+						processTasks(tasks, rowCounter, commandsCount, exec, container);
 
-				logger.info("Try to execute query ...");
-				String query = FlowVariableResolver.parse(m_query.getStringValue(), this);
-				try (OResultSet resultSet = databaseSession.query(query)) {
-					container = exec.createDataContainer(dataTableSpec);
-					while (resultSet.hasNext()) {
-						OResult result = resultSet.next();
-						processOResult(container, dateFormat, dateTimeFormat, dataTableSpec, result, rowCounter);
-						// check if the execution monitor was canceled
-						exec.checkCanceled();
-						rowCounter.incrementAndGet();
-						exec.setProgress("Loaded " + rowCounter + " row");
 					}
+					container.close();
 				}
 
-				// once we are done, we close the container and return its table
-				if (container == null) {
-					// we have empty result
-					container = exec.createDataContainer(new DataTableSpec());
-				}
-				container.close();
-			} finally {
-				orientDBPool.close();
-				orientDBEnv.close();
+			} else {
+				try (ODatabaseSession databaseSession = orientDBPool.acquire()) {
+
+					logger.info("Try to execute query ...");
+					String query = FlowVariableResolver.parse(m_query.getStringValue(), this);
+					try (OResultSet resultSet = databaseSession.query(query)) {
+						container = exec.createDataContainer(dataTableSpec);
+						while (resultSet.hasNext()) {
+							OResult result = resultSet.next();
+							processOResult(container, dateFormat, dateTimeFormat, dataTableSpec, result, rowCounter);
+							// check if the execution monitor was canceled
+							exec.checkCanceled();
+							rowCounter.incrementAndGet();
+							exec.setProgress("Loaded " + rowCounter + " row");
+						}
+					}
+
+					// once we are done, we close the container and return its table
+					if (container == null) {
+						// we have empty result
+						container = exec.createDataContainer(new DataTableSpec());
+					}
+					container.close();
+				} 
 			}
 		}
 
 		BufferedDataTable out = container.getTable();
-		return new PortObject[] { out,orientDBConnectionPortObject };
+		return new PortObject[] { out, orientDBConnectionPortObject };
 	}
     
     private void processTasks(List<Callable<DataRow>> tasks,AtomicLong rowCounter,long commandsCount,final ExecutionContext exec,BufferedDataContainer container) throws CanceledExecutionException {
@@ -390,8 +385,7 @@ public class OrientDBQueryNodeModel extends NodeModel implements FlowVariablePro
     }
 
     
-    @SuppressWarnings("rawtypes")
-	@Override
+    @Override
 	protected PortObjectSpec[] configure(PortObjectSpec[] inSpecs) throws InvalidSettingsException {
 		if (inSpecs == null || inSpecs.length < 1 || inSpecs[ORIENTDB_CONNECTION_INDEX] == null) {
 			throw new InvalidSettingsException("No required input available!");
@@ -412,23 +406,21 @@ public class OrientDBQueryNodeModel extends NodeModel implements FlowVariablePro
 		
 		CredentionalUtil.UserLogin userLogin = CredentionalUtil.getUserLoginInfo(connectionSettings.getUserName(), connectionSettings.getPassword(),
 				connectionSettings.getCredName(), getCredentialsProvider());
-		OrientDB orientDBEnv = new OrientDB(connectionSettings.getDbUrl(), userLogin.getLogin(),
-				userLogin.getDecryptedPassword(), OrientDBConfig.defaultConfig());
-		ODatabasePool orientDBPool = new ODatabasePool(orientDBEnv, connectionSettings.getDbName(),
-				userLogin.getLogin(), userLogin.getDecryptedPassword());
-		List<DataColumnSpec> columns = defineColumns(orientDBPool);
-		if (useCommandFromTableColumn) {
-			//extend currect datatablespec
-			List<DataColumnSpec> currentColumns = new LinkedList<DataColumnSpec>();
-			for (int i=0; i<tableTableSpec.getNumColumns();i++) {
-				currentColumns.add(tableTableSpec.getColumnSpec(i));				
+		try (ODatabasePool orientDBPool = new ODatabasePool(connectionSettings.getDbUrl(), connectionSettings.getDbName(),
+				userLogin.getLogin(), userLogin.getDecryptedPassword())) {
+			List<DataColumnSpec> columns = defineColumns(orientDBPool);
+			if (useCommandFromTableColumn) {
+				List<DataColumnSpec> currentColumns = new LinkedList<DataColumnSpec>();
+				for (int i = 0; i < tableTableSpec.getNumColumns(); i++) {
+					currentColumns.add(tableTableSpec.getColumnSpec(i));
+				}
+				columns.addAll(0, currentColumns);
 			}
-			columns.addAll(0, currentColumns);
+			DataTableSpec dataTableSpec = new DataTableSpec(columns.toArray(new DataColumnSpec[columns.size()]));
+			setConfiguredTableSpec(dataTableSpec);
 		}
-		DataTableSpec dataTableSpec = new DataTableSpec(columns.toArray(new DataColumnSpec[columns.size()]));
-		setConfiguredTableSpec(dataTableSpec);
 
-		return new PortObjectSpec[] { dataTableSpec,orientDbSpec  };
+		return new PortObjectSpec[] { getConfiguredTableSpec(), orientDbSpec };
 	}
     
     private List<DataColumnSpec>  defineColumns(ODatabasePool orientDBPool) {

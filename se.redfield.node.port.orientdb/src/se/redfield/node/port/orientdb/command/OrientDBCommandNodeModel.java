@@ -179,29 +179,29 @@ public class OrientDBCommandNodeModel extends NodeModel implements FlowVariableP
 		logger.info("Try to create connection...");		
 		CredentionalUtil.UserLogin userLogin = CredentionalUtil.getUserLoginInfo(getConnectionSettings().getUserName(), getConnectionSettings().getPassword(),
 				getConnectionSettings().getCredName(), getCredentialsProvider());
-		OrientDB orientDBEnv = new OrientDB(getConnectionSettings().getDbUrl(), userLogin.getLogin(),
-				userLogin.getDecryptedPassword(), OrientDBConfig.defaultConfig());
-		ODatabasePool orientDBPool = new ODatabasePool(orientDBEnv, getConnectionSettings().getDbName(),
-				userLogin.getLogin(),
-				userLogin.getDecryptedPassword());
-		
-		boolean useInputDataTable = (m_mode.isEnabled() && m_mode.getStringValue().equals(WRITE_TABLE_FOR_CLASS));
-		boolean useSingleCommand = (m_mode.isEnabled() && m_mode.getStringValue().equals(USE_DIRECT_COMMAND));
-		boolean useColumnWithCommand = (m_mode.isEnabled() && m_mode.getStringValue().equals(USE_COMMAND_FROM_TABLE));
+		BufferedDataContainer container = null;
+		try (ODatabasePool orientDBPool = new ODatabasePool(getConnectionSettings().getDbUrl(),
+				getConnectionSettings().getDbName(), userLogin.getLogin(), userLogin.getDecryptedPassword())) {
 
-		DataTableSpec dataTableSpec = getConfiguredTableSpec();
-		BufferedDataContainer container = exec.createDataContainer(dataTableSpec);
+			boolean useInputDataTable = (m_mode.isEnabled() && m_mode.getStringValue().equals(WRITE_TABLE_FOR_CLASS));
+			boolean useSingleCommand = (m_mode.isEnabled() && m_mode.getStringValue().equals(USE_DIRECT_COMMAND));
+			boolean useColumnWithCommand = (m_mode.isEnabled()
+					&& m_mode.getStringValue().equals(USE_COMMAND_FROM_TABLE));
 
-		logger.info("Try to execute commands ...");
-		if (useSingleCommand) {
-			executeSingleCommand(orientDBPool, container);
-		} else if (useInputDataTable) {
-			executeCommandsFromDataTable(orientDBPool, inData, exec, dataTableSpec, container);
-		} else if (useColumnWithCommand) {
-			executeCommandsFromColumn(orientDBPool, inData, exec, container);
+			DataTableSpec dataTableSpec = getConfiguredTableSpec();
+			container = exec.createDataContainer(dataTableSpec);
+
+			logger.info("Try to execute commands ...");
+			if (useSingleCommand) {
+				executeSingleCommand(orientDBPool, container);
+			} else if (useInputDataTable) {
+				executeCommandsFromDataTable(orientDBPool, inData, exec, dataTableSpec, container);
+			} else if (useColumnWithCommand) {
+				executeCommandsFromColumn(orientDBPool, inData, exec, container);
+			}
+
+			container.close();
 		}
-
-		container.close();
 		BufferedDataTable out = container.getTable();
 		return new PortObject[] { FlowVariablePortObject.INSTANCE, out, orientDBConnectionPortObject };
 	}

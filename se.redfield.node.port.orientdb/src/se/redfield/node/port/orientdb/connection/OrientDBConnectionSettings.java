@@ -30,6 +30,7 @@ public class OrientDBConnectionSettings {
 	private String dbName;
 	private String userName = null;
 	private String password = null;
+	
 	private int poolSize = OrientDBConnectionNodeModel.DEFAULT_POOL_SIZE;
 
 	private boolean m_kerberos = false;
@@ -47,7 +48,6 @@ public class OrientDBConnectionSettings {
 
 	public OrientDBConnectionSettings(final ConfigRO settings, final CredentialsProvider credProvider)
 			throws InvalidSettingsException {
-		LOGGER.info("=2===OrientDBConnectionSettings====");
 		loadValidatedConnection(settings, credProvider);
 	}
 
