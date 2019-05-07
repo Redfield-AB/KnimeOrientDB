@@ -35,5 +35,16 @@
             category-path="/community/orientdb"
             factory-class="se.redfield.node.port.orientdb.function.OrientDBFunctionNodeFactory"/>
    </extension>
+   <extension
+         point="org.knime.core.PortType">
+      <portType
+            hidden="false"
+            name="se.redfield.node.port.orientdb.connection"
+            objectClass="se.redfield.node.port.orientdb.connection.OrientDBConnectionPortObject"
+            objectSerializer="se.redfield.node.port.orientdb.connection.OrientDBConnectionPortObject$Serializer"
+            specClass="se.redfield.node.port.orientdb.connection.OrientDBConnectionPortObjectSpec"
+            specSerializer="se.redfield.node.port.orientdb.connection.OrientDBConnectionPortObjectSpec$Serializer">
+      </portType>
+   </extension>
    
 </plugin>
