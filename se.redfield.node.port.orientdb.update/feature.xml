@@ -2,7 +2,7 @@
 <feature
       id="se.redfield.node.port.orientdb.update"
       label="Update"
-      version="2.0.72"
+      version="2.0.80.qualifier"
       provider-name="Redfield AB">
 
    <description url="http://www.example.com/description">
