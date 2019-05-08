@@ -17,10 +17,8 @@
       [Enter License Description here.]
    </license>
 
-   <plugin
-         id="se.redfield.node.port.orientdb"
-         download-size="0"
-         install-size="0"
+   <includes
+         id="se.redfield.node.port.orientdb.feature"
          version="0.0.0"/>
 
 </feature>
