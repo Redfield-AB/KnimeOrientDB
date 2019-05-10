@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
       id="se.redfield.node.port.orientdb.feature"
-      label="Feature"
-      version="2.0.72"
+      label="OrientDB Connection Nodes"
+      version="2.0.80.qualifier"
       provider-name="Redfield AB">
 
    <description url="http://www.example.com/description">

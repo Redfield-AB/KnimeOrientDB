@@ -2,7 +2,7 @@
 <feature
       id="se.redfield.node.port.orientdb.testing"
       label="Testing"
-      version="2.0.72"
+      version="2.0.80.qualifier"
       provider-name="Redfield AB"
       plugin="se.redfield.node.port.orientdb">
 
