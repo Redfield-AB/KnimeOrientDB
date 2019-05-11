@@ -11,14 +11,24 @@
 
 	<fullDescription>
 		<intro>
-			Node for executing batch commands. More information: https://orientdb.com/docs/3.0.x/sql/SQL-batch.html
+			Node for executing batch commands. More information:
+			https://orientdb.com/docs/3.0.x/sql/SQL-batch.html
 		</intro>
-		<option name="Generate by template">Generates a batch script according to the user defined template in 'Batch script'. This script contains the same amount of subqueries as the number of input table records.</option>
-		<option name="Batch size limit">Number of commands in the batch. <b>Recommended value – 5000.</b> Higher values might lead to stack overflow in OrientDB.</option>
-		<option name="Table columns">List of the table columns of the input table, that can be used as the wildcards in the query text.</option>
-		<option name="Flow variables">List of the workflow Flow Variables, that can be used as the wildcards in the query text.</option>
-		<option name="Classes and Fields">Fetched from the connected database according to the schema. Can be used as the wildcards in the query text.</option>
-		
+		<option name="Generate by template">Generates a batch script according to the user
+			defined template in 'Batch script'. This script contains the same
+			amount of subqueries as the number of input table records.</option>
+		<option name="Batch size limit">
+			Number of commands in the batch.
+			<b>Recommended value – 5000.</b>
+			Higher values might lead to stack overflow in OrientDB.
+		</option>
+		<option name="Table columns">List of the table columns of the input table, that
+			can be used as the wildcards in the query text.</option>
+		<option name="Flow variables">List of the workflow Flow Variables, that can be
+			used as the wildcards in the query text.</option>
+		<option name="Classes and Fields">Fetched from the connected database according to
+			the schema. Can be used as the wildcards in the query text.</option>
+
 	</fullDescription>
 	<ports>
 		<inPort index="0" name="Input Flow variables">Input Flow variables.</inPort>
@@ -29,4 +39,9 @@
 		<outPort index="1" name="Output data table">Output data table.</outPort>
 		<outPort index="2" name="OrientDB connection">OrientDB Connection.</outPort>
 	</ports>
+	<views>
+		<view name="View Name" index="0">
+			View Description
+		</view>
+	</views>
 </knimeNode>

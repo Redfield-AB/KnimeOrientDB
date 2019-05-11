@@ -9,16 +9,28 @@
 	</shortDescription>
 	<fullDescription>
 		<intro>
-			Opens a database connection based on the input settings. More information: https://orientdb.com/docs/last/Console-Command-Connect.html
-			. Node supports only 'remote' mode of connection.
+			Opens a database connection based on the input settings. More
+			information:
+			https://orientdb.com/docs/last/Console-Command-Connect.html
+			. Node
+			supports only 'remote' mode of connection.
 		</intro>
-		<option name="Pool size">Number of multiple connections available during the session.</option>
-		<option name="Database URL">Type connection, database location and port information.</option>
+		<option name="Pool size">Number of multiple connections available during
+			the session.</option>
+		<option name="Database URL">Type connection, database location and port
+			information.</option>
 		<option name="Database name">Name of the database to connect.</option>
 		<option name="Username and Password">User login and password.</option>
-		<option name="Credentials">Option to connect using Knime credentials.</option>
+		<option name="Credentials">Option to connect using Knime credentials.
+		</option>
 	</fullDescription>
 	<ports>
 		<outPort index="0" name="OrientDB connection">OrientDB Connection.</outPort>
 	</ports>
+	<views>
+		<view name="View Name" index="0">
+			View Description
+		</view>
+	</views>
+
 </knimeNode>

@@ -10,10 +10,14 @@
 
 	<fullDescription>
 		<intro>
-			Node is used for a database function call. Connected database must have any user defined functions. More information: https://orientdb.com/docs/last/Functions.html
+			Node is used for a database function call. Connected database
+			must have any user defined functions. More information:
+			https://orientdb.com/docs/last/Functions.html
 		</intro>
-		<option name="Functions">List of functions defined for the connected database.</option>
-		<option name="List of arguments">Dynamic list of arguments, input table or Flow variables can be used as the wildcards.</option>
+		<option name="Functions">List of functions defined for the connected
+			database.</option>
+		<option name="List of arguments">Dynamic list of arguments, input table or Flow
+			variables can be used as the wildcards.</option>
 	</fullDescription>
 	<ports>
 		<inPort index="0" name="Input Flow variables">Input Flow variables.</inPort>
@@ -22,4 +26,9 @@
 		<outPort index="0" name="Output data table">Output data table.</outPort>
 		<outPort index="1" name="OrientDB connection">OrientDB Connection.</outPort>
 	</ports>
+	<views>
+		<view name="View Name" index="0">
+			View Description
+		</view>
+	</views>
 </knimeNode>

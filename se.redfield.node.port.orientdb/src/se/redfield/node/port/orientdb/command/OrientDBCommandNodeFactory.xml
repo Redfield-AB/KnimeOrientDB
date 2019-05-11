@@ -11,22 +11,36 @@
 
 	<fullDescription>
 		<intro>
-			Executes non-idempotent query. This node is used for uploading, updating and deleting data from database. Suggested commands: create, insert, upsert, delete.
-			<b>Cell type 'LocalTime' isn't supported! Don't use it as source table!</b>
+			Executes non-idempotent query. This node is used for uploading,
+			updating and deleting data from database. Suggested commands: create,
+			insert, upsert, delete.
+			<b>Cell type 'LocalTime' isn't supported! Don't use it as source
+				table!</b>
 		</intro>
-		<option name="Use column with command">Executes each value of the selected column as a query.</option>
+		<option name="Use column with command">Executes each value of the selected column as a
+			query.</option>
 		<option name="Use SQL statement">Executes user defined query.</option>
-		<option name="Write table to class">Executes each value of the selected column as a query.</option>
-		<option name="Use upsert">If not active new objects of the chosen class will be created. If active the objects will be updated according to unique index matching or 
-		created if no such index found or any objects matched.
-		 Properties for upload/update can be selected with filter. 
-		Column name must correspond to the class property names in the database. Returns JSON column with the results.</option>
+		<option name="Write table to class">Executes each value of the selected column as a
+			query.</option>
+		<option name="Use upsert">If not active new objects of the chosen class will
+			be created. If active the objects will be updated according to unique
+			index matching or
+			created if no such index found or any objects matched.
+			Properties for upload/update can be selected with filter.
+			Column name must correspond to the class property names in the database.
+			Returns JSON column with the results.
+		</option>
 	</fullDescription>
 	<ports>
 		<inPort index="0" name="Input data table">Input data table.</inPort>
-		<inPort index="1" name="OrientDB connection">OrientDB Connection.</inPort>		
+		<inPort index="1" name="OrientDB connection">OrientDB Connection.</inPort>
 		<outPort index="0" name="Output Flow variables">Output Flow variables.</outPort>
 		<outPort index="1" name="Output data table">Output data table.</outPort>
 		<outPort index="2" name="OrientDB connection">OrientDB Connection.</outPort>
 	</ports>
+	<views>
+		<view name="View Name" index="0">
+			View Description
+		</view>
+	</views>
 </knimeNode>
