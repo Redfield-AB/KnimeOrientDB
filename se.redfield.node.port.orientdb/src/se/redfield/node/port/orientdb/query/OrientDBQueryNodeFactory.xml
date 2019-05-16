@@ -1,59 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<knimeNode icon="orientdb.png" type="Source"
-	xmlns="http://knime.org/node/v2.8"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://knime.org/node/v2.10 http://knime.org/node/v2.10.xsd">
-	<name>OrientDB Query</name>
-
-	<shortDescription>
+<knimeNode icon="orientdb.png" type="Source" xmlns="http://knime.org/node/v2.8" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://knime.org/node/v2.10 http://knime.org/node/v2.10.xsd">
+    <name>OrientDB Query</name>
+    
+    <shortDescription>
 		execute queries on OrientDB
 	</shortDescription>
 
 	<fullDescription>
 		<intro>
-			Executes idempotent query. This node is used for retrieving
-			information from the database. Suggested commands: select, traverse,
-			expand, match, shortestPath.
+			Executes idempotent query. This node is used for retrieving information from the database. Suggested commands: select, traverse, expand, match, shortestPath.
 		</intro>
-		<option name="Schema">
-			Select source of schema of future Knime data table. Next different
-			modes are available:
-			<ol>
-				<li>
-					<b>_dynamic_</b>
-					: The result will be returned as Knime table according to the user
-					query.
-				</li>
-				<li>
-					<b>_as_json_</b>
-					: The result will be returned as table of JSON rows with one
-					column.
-				</li>
-				<li>
-					<b>class name</b>
-					: Selected schema class will be used to get information about
-					columns and their types.
-				</li>
-			</ol>
-		</option>
-		<option name="Query">Executes user defined query</option>
-		<option name="Generate RowID by @rid">In case of error with RowID duplicates use this
-			option, so the RowID will be defined according to unique @rid.
-		</option>
-		<option name="Flow Variables">List of the workflow Flow Variables, that can be
-			used as the wildcards in the query text.</option>
-		<option name="Classes and Fields">Fetched from the connected database according to
-			the schema. Can be used as the wildcards in the query text.</option>
+		<option name="Schema">Select source of schema of future Knime data table. Next different modes are available:
+		  <ol>
+		      <li><b>_dynamic_</b>: The result will be returned as Knime table according to the user query.</li>
+		      <li><b>_as_json_</b>: The result will be returned as table of JSON rows with one column.</li>
+		      <li><b>class name</b>: Selected schema class will be used to get information about columns and their types.</li>
+		  </ol></option>
+		  <option name="Query">Executes user defined query</option>
+		  <option name="Generate RowID by @rid">In case of error with RowID duplicates use this option, so the RowID will be defined according to unique @rid.</option>
+		  <option name="Flow Variables">List of the workflow Flow Variables, that can be used as the wildcards in the query text.</option>
+		  <option name="Classes and Fields">Fetched from the connected database according to the schema. Can be used as the wildcards in the query text.</option>
 	</fullDescription>
 	<ports>
 		<inPort index="0" name="OrientDB connection">OrientDB Connection.</inPort>
 		<outPort index="0" name="Output data table">Output data table.</outPort>
-		<outPort index="1" name="OrientDB connection">OrientDB Connection.</outPort>
+		<outPort index="1" name="OrientDB connection">OrientDB Connection.</outPort>		
 	</ports>
-
-	<views>
-		<view name="View Name" index="0">
-			View Description
-		</view>
-	</views>
 </knimeNode>
