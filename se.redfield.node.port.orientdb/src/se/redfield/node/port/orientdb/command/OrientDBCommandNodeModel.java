@@ -561,11 +561,7 @@ public class OrientDBCommandNodeModel extends NodeModel implements FlowVariableP
         this.m_fields.loadSettingsFrom(settings);
         this.m_use_upsert.loadSettingsFrom(settings);
         this.connectionSettings = new OrientDBConnectionSettings();
-		try {
-			this.connectionSettings.loadValidatedConnection(settings, getCredentialsProvider());
-		} catch (InvalidSettingsException ise) {
-			logger.error("Cannot load conneciton configuration!", ise);
-		}
+		this.connectionSettings.loadValidatedConnection(settings, getCredentialsProvider());		
     }
 
     /**

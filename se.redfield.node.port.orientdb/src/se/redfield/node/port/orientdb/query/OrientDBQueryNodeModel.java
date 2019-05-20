@@ -154,8 +154,6 @@ public class OrientDBQueryNodeModel extends NodeModel implements FlowVariablePro
 				String columnWithQuery = m_column_with_query.getStringValue();
 				final int columnWithQueryIndex = dataTableSpec.findColumnIndex(columnWithQuery);
 				logger.infoWithFormat("Column with query : %s , %s ", columnWithQuery, columnWithQueryIndex);
-				final int columnWithResultIndex = dataTableSpec.findColumnIndex("result");
-
 				Function<DataRow, Callable<DataRow>> convertToCallable = new Function<DataRow, Callable<DataRow>>() {
 					@Override
 					public Callable<DataRow> apply(DataRow currectDataRow) {
@@ -184,8 +182,6 @@ public class OrientDBQueryNodeModel extends NodeModel implements FlowVariablePro
 										cells.add(t);
 									}
 								});
-								// cells.remove(columnWithResultIndex);
-
 								cells.add(Constants.JSON_CELL_FACTORY.createCell(stringBuilder.toString()));
 								DataRow row = new DefaultRow(currectDataRow.getKey(), cells);
 								return row;
@@ -266,7 +262,7 @@ public class OrientDBQueryNodeModel extends NodeModel implements FlowVariablePro
 			try {
 				newDataRow = future.get();
 			} catch (InterruptedException | ExecutionException e) {
-				logger.error("Cannot execute future!", e);
+				logger.error("Future haven't performed!", e);
 			}
 			container.addRowToTable(newDataRow);
 			exec.checkCanceled();
@@ -518,7 +514,7 @@ public class OrientDBQueryNodeModel extends NodeModel implements FlowVariablePro
 		try {
 			m_column_with_query.loadSettingsFrom(settings);
 		} catch (InvalidSettingsException e) {
-			logger.info("Cannot load property "+OrientDBQueryNodeDialog.CFGKEY_QUERY_FIELD);
+			logger.info("Property "+OrientDBQueryNodeDialog.CFGKEY_QUERY_FIELD+" isn't loaded!");
 		}
 
 	}

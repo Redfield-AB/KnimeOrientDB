@@ -340,7 +340,7 @@ public class OrientDBQueryNodeDialog extends AbstractOrientDBNodeDialogPane {
 		try {
 			this.connectionSettings = spec.getConnectionSettings(getCredentialsProvider());
 		} catch (InvalidSettingsException e) {
-			throw new NotConfigurableException("Cannot get connection settings", e);
+			throw new NotConfigurableException("Connection settings haven't given", e);
 		}
 		logger.info(" (connectionSettings!=null) :" + (connectionSettings != null));
 

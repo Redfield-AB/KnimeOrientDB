@@ -322,7 +322,7 @@ public class OrientDBExecuteNodeDialog extends AbstractOrientDBNodeDialogPane {
 		try {
 			this.connectionSettings = spec.getConnectionSettings(getCredentialsProvider());
 		} catch (InvalidSettingsException e) {
-			throw new NotConfigurableException("Cannot get connection settings", e);
+			throw new NotConfigurableException("Connection settings haven't given", e);
 		}
 		logger.info(" (connectionSettings!=null) :" + (connectionSettings != null));
 
@@ -335,7 +335,7 @@ public class OrientDBExecuteNodeDialog extends AbstractOrientDBNodeDialogPane {
 		try {
 			classesWithProperties = getAvailableClassesWithFields(CLASS_FILTER);
 		} catch (InvalidSettingsException e2) {
-			throw new NotConfigurableException("Cannot get available classes from database!",e2);
+			throw new NotConfigurableException("OrientDB classes haven't loaded from database!", e2);
 		}
 		for (Map.Entry<String, List<OProperty>> entry : classesWithProperties.entrySet()) {
 			classesListModel.addElement(entry.getKey());

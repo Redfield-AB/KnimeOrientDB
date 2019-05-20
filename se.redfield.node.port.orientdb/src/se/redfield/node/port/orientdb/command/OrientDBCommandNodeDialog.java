@@ -307,21 +307,21 @@ public class OrientDBCommandNodeDialog extends AbstractOrientDBNodeDialogPane {
 			throws NotConfigurableException {
 		
 		if (specs == null || specs[OrientDBCommandNodeModel.ORIENTDB_CONNECTION_INDEX] == null) {
-			throw new NotConfigurableException("No required input available");
+			throw new NotConfigurableException("No required input available!");
 		}
 		OrientDBConnectionPortObjectSpec spec = (OrientDBConnectionPortObjectSpec) specs[OrientDBCommandNodeModel.ORIENTDB_CONNECTION_INDEX];
 
 		try {
 			this.connectionSettings = spec.getConnectionSettings(getCredentialsProvider());
 		} catch (InvalidSettingsException e) {
-			throw new NotConfigurableException("Cannot get connection settings", e);
+			throw new NotConfigurableException("Connection settings haven't given", e);
 		}
 		logger.info(" (connectionSettings!=null) :" + (connectionSettings != null));
 		
 		try {
 			classNameSelection.replaceListItems(getAvailableClasses(CLASS_FILTER), settings.getString(CFGKEY_CLASS, null));
 		} catch (InvalidSettingsException e1) {
-			throw new NotConfigurableException("Cannot load classes!", e1);
+			throw new NotConfigurableException("OrientDB classes haven't loaded from database!", e1);
 		}
 		
 		m_listModelVars.removeAllElements();

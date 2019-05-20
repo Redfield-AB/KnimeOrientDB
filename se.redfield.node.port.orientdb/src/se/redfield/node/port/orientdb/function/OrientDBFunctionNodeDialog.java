@@ -260,7 +260,7 @@ public class OrientDBFunctionNodeDialog extends NodeDialogPane {
 		try {
 			this.connectionSettings = spec.getConnectionSettings(getCredentialsProvider());
 		} catch (InvalidSettingsException e) {
-			throw new NotConfigurableException("Cannot get connection settings", e);
+			throw new NotConfigurableException("OrientDB classes haven't loaded from database!", e);
 		}
 		functionsListModel.removeAllElements();
 		try {
@@ -268,7 +268,7 @@ public class OrientDBFunctionNodeDialog extends NodeDialogPane {
 				functionsListModel.addElement(functionWithParams);
 			}
 		} catch (InvalidSettingsException e1) {
-			throw new NotConfigurableException("Can't connect to database!", e1);
+			throw new NotConfigurableException("OrientDB functions haven't loaded from database!", e1);
 		}
 		if (specs.length > OrientDBFunctionNodeModel.DATA_TABLE_INDEX
 				&& specs[OrientDBFunctionNodeModel.DATA_TABLE_INDEX] != null) {
@@ -298,7 +298,7 @@ public class OrientDBFunctionNodeDialog extends NodeDialogPane {
 			}
 			loadDocuments.setSelected(settings.getBoolean(OrientDBFunctionNodeModel.CFGKEY_LOAD_DOC, false));
 		} catch (InvalidSettingsException e) {
-			logger.warn("Cannot load settings", e);
+			throw new NotConfigurableException("Settings haven't loaded", e);
 		}
 		
 
