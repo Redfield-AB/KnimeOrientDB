@@ -6,7 +6,26 @@
       provider-name="Redfield AB">
 
    <description url="http://www.example.com/description">
-      [Enter Feature Description here.]
+      This extension enables user to work with OrientDB database in Knime environment.
+The extension is build with official OrientDB Java API, and includes 5 nodes to utilize basic database routines – create, read, update and delete tasks.
+OrientDb uses a dialect of SQL with some extensions for graph traversal – https://orientdb.com/docs/last/SQL.html.
+
+Description of the section:
+
+OrientDB Command:
+Executes non-idempotent operations in synchronous or asynchronous mode. Used for inserting data into the database.
+
+OrientDB Connection:
+The node creates a database connection.
+
+OrientDB Execute:
+Executes multiple SQL commands in a batch mode.
+
+OrientDB Function:
+Executes functions defined by users on OrientDB server.
+
+OrientDB Query:
+Execute idempotent operations. Used for extracting data from database as Knime table.
    </description>
 
    <copyright url="http://www.example.com/copyright">
