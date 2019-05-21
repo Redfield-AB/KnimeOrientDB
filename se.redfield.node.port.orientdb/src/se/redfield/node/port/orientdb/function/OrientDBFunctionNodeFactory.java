@@ -7,7 +7,7 @@ import org.knime.core.node.NodeView;
 
 /**
  * <code>NodeFactory</code> for the "OrientDBNodeTest" Node.
- * 
+ *
  *
  * @author Sergey Chernolyas &lt;sergey.chernolyas@gmail.com&gt;
  */
@@ -21,22 +21,22 @@ public class OrientDBFunctionNodeFactory extends NodeFactory<OrientDBFunctionNod
 
     @Override
     public int getNrNodeViews() {
-        return 1;
+        return 0;
     }
 
-  
+
     @Override
     public NodeView<OrientDBFunctionNodeModel> createNodeView(final int viewIndex, final OrientDBFunctionNodeModel nodeModel) {
-        return new OrientDBFunctionNodeView(nodeModel);
+    	return null;
     }
 
-  
+
     @Override
     public boolean hasDialog() {
         return true;
     }
 
-   
+
     @Override
     public NodeDialogPane createNodeDialogPane() {
         return new OrientDBFunctionNodeDialog();

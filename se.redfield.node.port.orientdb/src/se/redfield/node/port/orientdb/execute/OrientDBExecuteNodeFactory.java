@@ -6,7 +6,7 @@ import org.knime.core.node.NodeView;
 
 /**
  * <code>NodeFactory</code> for the "OrientDBNodeTest" Node.
- * 
+ *
  *
  * @author Sergey Chernolyas &lt;sergey.chernolyas@gmail.com&gt;
  */
@@ -18,13 +18,13 @@ public class OrientDBExecuteNodeFactory extends NodeFactory<OrientDBExecuteNodeM
 
 	@Override
 	public int getNrNodeViews() {
-		return 1;
+		return 0;
 	}
 
 	@Override
 	public NodeView<OrientDBExecuteNodeModel> createNodeView(final int viewIndex,
 			final OrientDBExecuteNodeModel nodeModel) {
-		return new OrientDBExecuteNodeView(nodeModel);
+		return null;
 	}
 
 	@Override

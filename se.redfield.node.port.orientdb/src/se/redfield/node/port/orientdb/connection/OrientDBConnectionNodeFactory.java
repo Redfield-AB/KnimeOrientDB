@@ -14,14 +14,12 @@ public class OrientDBConnectionNodeFactory  extends NodeFactory<OrientDBConnecti
 
 	@Override
 	protected int getNrNodeViews() {
-		// TODO Auto-generated method stub
-		return 1;
+		return 0;
 	}
 
 	@Override
 	public NodeView<OrientDBConnectionNodeModel> createNodeView(int viewIndex, OrientDBConnectionNodeModel nodeModel) {
-		// TODO Auto-generated method stub
-		return new OrientDBConnectionNodeView(nodeModel);
+		return null;
 	}
 
 	@Override
