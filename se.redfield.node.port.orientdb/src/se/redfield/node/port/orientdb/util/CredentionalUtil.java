@@ -20,7 +20,7 @@ public class CredentionalUtil {
 			CredentialsProvider credentialsProvider) throws InvalidSettingsException {
 		String decryptedPassword = null;
 		String login = null;
-		if ( (userName==null && password==null ) || (credentionalName==null)) {
+		if ( userName==null || password==null || credentionalName==null || userName.isEmpty() || password.isEmpty()) {
 			throw new InvalidSettingsException("No data for login to database! Please configure username and password or credentional!");			
 		}
 
