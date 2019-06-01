@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -12,6 +13,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
@@ -71,6 +73,7 @@ import com.orientechnologies.orient.core.metadata.schema.OClass;
 import com.orientechnologies.orient.core.metadata.schema.OProperty;
 import com.orientechnologies.orient.core.metadata.schema.OType;
 import com.orientechnologies.orient.core.sql.executor.OResult;
+import com.orientechnologies.orient.core.sql.executor.OResultInternal;
 import com.orientechnologies.orient.core.sql.executor.OResultSet;
 
 import se.redfield.node.port.orientdb.Constants;
@@ -314,7 +317,7 @@ public class OrientDBQueryNodeModel extends NodeModel implements FlowVariablePro
     	return  (DateAndTimeCell) DateAndTimeCellFactory.create(format.format(value));    	
     }
     
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @SuppressWarnings({ "unchecked", "rawtypes", "static-access" })
 	private DataCell mapToDataCell(OResult result, String fieldName, DataColumnSpec columnSpec, SimpleDateFormat dateFormat,
 			SimpleDateFormat dateTimeFormat) {
     	DataCell cell = null;
@@ -341,9 +344,51 @@ public class OrientDBQueryNodeModel extends NodeModel implements FlowVariablePro
 				cell = (value ? BooleanCell.TRUE : BooleanCell.FALSE);
 			} else if (dataType.equals(DateAndTimeCell.TYPE)) {
 				Date dateTimeValue = result.getProperty(fieldName);
-				cell = (createCell(dateTimeValue, dateTimeFormat));					
+				cell = (createCell(dateTimeValue, dateTimeFormat));	
+			} else if (dataType.equals(Constants.JSON_CELL_FACTORY.getDataType())) {
+				// show as is
+				Object value = result.getProperty(fieldName);
+				try {
+					String json = "{}";
+					if (value instanceof ORidBag) {
+						List values = new LinkedList<>();
+						ORidBag ridBag = (ORidBag) value;
+						Iterator<OIdentifiable> it = ridBag.iterator();
+						while (it.hasNext()) {
+							OIdentifiable identifiable = it.next();
+							values.add(identifiable.getIdentity().toString());
+						}
+						json = Constants.OBJECT_MAPPER.writeValueAsString(values);
+					} else if (value instanceof List || value instanceof Set) {
+						Collection col = (Collection) value;
+						if (!col.isEmpty()) {
+							Object firstValue = col.iterator().next();
+							logger.info(col.iterator().next().getClass().getName());
+							if (firstValue instanceof OResultInternal) {
+								//Orientdb schema class
+								@SuppressWarnings("unused")
+								Collection<OResultInternal> typeColl = col;	
+								OResultInternal i = typeColl.iterator().next();
+								StringBuilder buffer = new StringBuilder(10_000);
+								buffer.append("[");
+								buffer.append(typeColl.stream().map((OResultInternal ori)->{return ori.toJSON();}).collect(Collectors.joining(",")));
+								buffer.append("]");
+								json = buffer.toString();
+							} else {
+								json = Constants.OBJECT_MAPPER.writeValueAsString(value);
+							}							
+						}
+						
+					} else {
+						json = Constants.OBJECT_MAPPER.writeValueAsString(value);
+					}
+					cell = Constants.JSON_CELL_FACTORY.create(json, true);
+				} catch (Exception e) {
+					throw new RuntimeException("Cannot process JSON", e);
+				}
+
 			} else if (dataType.equals(ListCell.getCollectionType(StringCell.TYPE))) {
-				//it is string array
+				//@depricated
 				Object field = result.getProperty(fieldName);
 				List<StringCell> cells  = new LinkedList<>();
 				List values = null;
@@ -357,12 +402,17 @@ public class OrientDBQueryNodeModel extends NodeModel implements FlowVariablePro
 					}
 				} else if (field instanceof List) {
 					values = (List) field;									
+				}	else if (field instanceof Set) {
+					values = new LinkedList((Set) field);									
 				}			
-				
+				if (values!=null) {
 				for (Object value : values) {
 					cells.add(new StringCell(value.toString()));
 				}				
-				cell = CollectionCellFactory.createListCell(cells);					
+				cell = CollectionCellFactory.createListCell(cells);
+				} else {
+					cell = new MissingCell("No value");
+				}
 			} 
 			else {
 				logger.warnWithFormat("unsupported dataType name : %s . class: %s .field: %s ",dataType.getName(), dataType, fieldName);
@@ -481,6 +531,7 @@ public class OrientDBQueryNodeModel extends NodeModel implements FlowVariablePro
     private List<DataColumnSpec> prepareColumns(Map<String, OType> fieldTypeMap) {
     	List<DataColumnSpec> columns = new LinkedList<DataColumnSpec>();
     	for (Map.Entry<String, OType> entry : fieldTypeMap.entrySet()) {
+    		logger.info("field "+entry.getKey()+"; value "+Mapping.mapToDataType(entry.getValue()));
 			DataColumnSpec columnSpec = new DataColumnSpecCreator(entry.getKey(),
 					Mapping.mapToDataType(entry.getValue())).createSpec();
 			columns.add(columnSpec);

@@ -40,9 +40,12 @@ public class Mapping {
 			dataType = DateAndTimeCell.TYPE;
 			break;
 		case LINKBAG:
+		case EMBEDDEDSET:
 		case EMBEDDEDLIST:
-			dataType = ListCell.getCollectionType(StringCell.TYPE);
-			break;		
+		case EMBEDDEDMAP:			
+//			dataType = ListCell.getCollectionType(StringCell.TYPE);
+			dataType = Constants.JSON_CELL_FACTORY.getDataType();
+			break;	
 			
 		default:
 			break;

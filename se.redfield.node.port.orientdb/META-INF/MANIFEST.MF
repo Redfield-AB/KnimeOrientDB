@@ -18,6 +18,9 @@ Require-Bundle: org.eclipse.core.runtime,
  org.knime.base,
  org.knime.json,
  org.knime.time;bundle-version="3.7.1",
- com.sun.jna;bundle-version="4.4.0"
+ com.sun.jna;bundle-version="4.4.0",
+ com.fasterxml.jackson.core.jackson-core;bundle-version="2.8.9",
+ com.fasterxml.jackson.core.jackson-databind;bundle-version="2.8.9",
+ com.fasterxml.jackson.datatype.jackson-datatype-jdk8;bundle-version="2.8.9"
 Bundle-ActivationPolicy: lazy
 Export-Package: se.redfield.node.port.orientdb
