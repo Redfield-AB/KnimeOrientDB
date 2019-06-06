@@ -544,7 +544,7 @@ public class OrientDBCommandNodeModel extends NodeModel implements FlowVariableP
         this.m_class.saveSettingsTo(settings);
         this.m_column_with_command.saveSettingsTo(settings);
         this.m_fields.saveSettingsTo(settings);
-        this.connectionSettings.saveConnection(settings);
+//        this.connectionSettings.saveConnection(settings);
         this.m_use_upsert.saveSettingsTo(settings);
     }
 
@@ -560,8 +560,8 @@ public class OrientDBCommandNodeModel extends NodeModel implements FlowVariableP
         this.m_column_with_command.loadSettingsFrom(settings);
         this.m_fields.loadSettingsFrom(settings);
         this.m_use_upsert.loadSettingsFrom(settings);
-        this.connectionSettings = new OrientDBConnectionSettings();
-		this.connectionSettings.loadValidatedConnection(settings, getCredentialsProvider());		
+//        this.connectionSettings = new OrientDBConnectionSettings();
+//		this.connectionSettings.loadValidatedConnection(settings, getCredentialsProvider());		
     }
 
     /**
