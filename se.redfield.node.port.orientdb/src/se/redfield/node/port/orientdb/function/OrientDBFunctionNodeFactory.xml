@@ -14,6 +14,7 @@
 		</intro>
 		<option name="Functions">List of functions defined for the connected database.</option>
 		<option name="List of arguments">Dynamic list of arguments, input table or Flow variables can be used as the wildcards.</option>
+		<option name="Load documents">If function returns only @rids of the objects, then if this option is not activated only @rid will be return, otherwise the properties of the documents will be returned as well.</option>
 	</fullDescription>
 	<ports>
 		<inPort index="0" name="Input Flow variables">Input Flow variables.</inPort>
