@@ -2,6 +2,7 @@ package se.redfield.node.port.orientdb.command;
 
 import java.io.File;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -9,6 +10,7 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -19,6 +21,12 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import javax.json.JsonArray;
+import javax.json.JsonNumber;
+import javax.json.JsonString;
+import javax.json.JsonValue;
+import javax.json.JsonValue.ValueType;
 
 import org.knime.base.util.flowvariable.FlowVariableProvider;
 import org.knime.base.util.flowvariable.FlowVariableResolver;
@@ -41,6 +49,7 @@ import org.knime.core.data.def.IntCell;
 import org.knime.core.data.def.LongCell;
 import org.knime.core.data.def.StringCell;
 import org.knime.core.data.json.JSONCell;
+import org.knime.core.data.json.JSONValue;
 import org.knime.core.data.time.localdate.LocalDateCell;
 import org.knime.core.data.time.localdatetime.LocalDateTimeCell;
 import org.knime.core.data.time.zoneddatetime.ZonedDateTimeCell;
@@ -74,6 +83,7 @@ import com.orientechnologies.orient.core.id.ORID;
 import com.orientechnologies.orient.core.id.ORecordId;
 import com.orientechnologies.orient.core.metadata.OMetadata;
 import com.orientechnologies.orient.core.metadata.schema.OClass;
+import com.orientechnologies.orient.core.metadata.schema.OProperty;
 import com.orientechnologies.orient.core.metadata.schema.OType;
 import com.orientechnologies.orient.core.record.OElement;
 import com.orientechnologies.orient.core.record.ORecord;
@@ -440,6 +450,10 @@ public class OrientDBCommandNodeModel extends NodeModel implements FlowVariableP
 					ZonedDateTimeCell cell = (ZonedDateTimeCell) dataRow.getCell(index);
 					ZonedDateTime zonedDateTime = cell.getZonedDateTime();
 					saveElement.setProperty(columnName, DateTimeUtils.toDate(zonedDateTime), OType.DATETIME);
+				} else if (dataType.equals(JSONCell.TYPE)) {
+					JSONCell cell = (JSONCell) dataRow.getCell(index);
+					JsonValue jsonValue = cell.getJsonValue();
+					setCollectionValueFromJson(databaseSession,saveElement,columnName,jsonValue);
 				}  else {
 					// @TODO support other types
 					throw new UnsupportedOperationException("Unsupported cell type " + dataType + " (class : "+dataType.getCellClass().getName()+") !");
@@ -463,6 +477,43 @@ public class OrientDBCommandNodeModel extends NodeModel implements FlowVariableP
 		return resultJson;
     }
     
+	
+    
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+	private void setCollectionValueFromJson(ODatabaseSession databaseSession,OElement saveElement,String columnName,JsonValue jsonValue) {
+    	OClass orientDbClass = saveElement.getSchemaType().get();
+    	if (!orientDbClass.existsProperty(columnName)) {
+    		return;    		
+    	}
+    	OProperty property = orientDbClass.getProperty(columnName);
+    	
+    	OType type = property.getType();
+    	
+    	if (jsonValue.getValueType().equals(ValueType.ARRAY)) {
+			JsonArray array = (JsonArray) jsonValue;
+			List result = new LinkedList();
+			for (Iterator<JsonValue> it = array.iterator();it.hasNext();) {
+				JsonValue currentValue = it.next();
+				if (currentValue.getValueType().equals(ValueType.NUMBER) || currentValue.getValueType().equals(ValueType.STRING) 
+						|| currentValue.getValueType().equals(ValueType.FALSE)
+						|| currentValue.getValueType().equals(ValueType.TRUE)) {
+					result.add(JsonUtils.getRequiredPrimitiveValue(property,currentValue));					
+				} else if (currentValue.getValueType().equals(ValueType.OBJECT)){
+					result.add(JsonUtils.getRequiredObjectValue(databaseSession, property, currentValue));
+				}				
+			}
+			if (!result.isEmpty()) {
+				if (type.equals(OType.EMBEDDEDLIST)) {
+					saveElement.setProperty(columnName, result, OType.EMBEDDEDLIST);
+				} else if (type.equals(OType.EMBEDDEDSET)) {
+					saveElement.setProperty(columnName, new HashSet(result), OType.EMBEDDEDSET);
+				}
+			}
+			    			
+		}
+    	
+    }
+    
     private String processUpsert( ODatabaseSession databaseSession,ORecordDuplicatedException de, List<String> savedFields,OElement saveElement) {    	
     	 OElement oldElement = databaseSession.load(de.getRid());
     	 for (String fieldName : savedFields) {
@@ -472,10 +523,12 @@ public class OrientDBCommandNodeModel extends NodeModel implements FlowVariableP
     }
     
         
-    private DateAndTimeCell createCell(Date value,SimpleDateFormat format) {    	
+    @SuppressWarnings("deprecation")
+	private DateAndTimeCell createCell(Date value,SimpleDateFormat format) {    	
     	return  (DateAndTimeCell) DateAndTimeCellFactory.create(format.format(value));    	
     }
     
+    @Deprecated
     private DataCell mapToDataCell(OResult result, String fieldName, DataColumnSpec columnSpec, SimpleDateFormat dateFormat,
 			SimpleDateFormat dateTimeFormat) {
     	DataCell cell = null;

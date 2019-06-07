@@ -38,7 +38,6 @@ public abstract class AbstractOrientDBNodeDialogPane extends NodeDialogPane  {
 			logger.warn("no connection info. Go out!");
 			return Collections.singletonList("no classes!");
 		}
-		logger.info("=!== getDbName :" + getConnectionSettings().getDbName());
 		List<String> availableClasses = new LinkedList<String>();
 		
 		CredentionalUtil.UserLogin userLogin = CredentionalUtil.getUserLoginInfo(getConnectionSettings().getUserName(), getConnectionSettings().getPassword(),

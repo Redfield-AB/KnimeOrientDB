@@ -21,6 +21,7 @@ Require-Bundle: org.eclipse.core.runtime,
  com.sun.jna;bundle-version="4.4.0",
  com.fasterxml.jackson.core.jackson-core;bundle-version="2.8.9",
  com.fasterxml.jackson.core.jackson-databind;bundle-version="2.8.9",
- com.fasterxml.jackson.datatype.jackson-datatype-jdk8;bundle-version="2.8.9"
+ com.fasterxml.jackson.datatype.jackson-datatype-jdk8;bundle-version="2.8.9",
+ org.glassfish.javax.json
 Bundle-ActivationPolicy: lazy
 Export-Package: se.redfield.node.port.orientdb

@@ -16,6 +16,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
@@ -57,6 +58,7 @@ import org.knime.core.node.workflow.FlowVariable;
 import com.orientechnologies.orient.core.metadata.schema.OClass;
 
 import se.redfield.node.port.orientdb.AbstractOrientDBNodeDialogPane;
+import se.redfield.node.port.orientdb.Constants;
 import se.redfield.node.port.orientdb.connection.OrientDBConnectionPortObjectSpec;
 import se.redfield.node.port.orientdb.connection.OrientDBConnectionSettings;
 
@@ -340,16 +342,26 @@ public class OrientDBCommandNodeDialog extends AbstractOrientDBNodeDialogPane {
 	}
 	
 	private static class ClassFilter implements Predicate<OClass> {
-		private static final List<String> SYSTEM_NAMES = Arrays.asList("OSchedule", "OSequence", "OFunction");
-
+		
 		@Override
 		public boolean test(OClass oClass) {
 			boolean hasName = !oClass.getName().isEmpty();
 			boolean realClass = !oClass.isAbstract();
 			boolean isVertexOrDocument = (oClass.isSubClassOf("V") || oClass.getSuperClasses().isEmpty());
-			boolean isNotSystemClass = !SYSTEM_NAMES.contains(oClass.getName());
+			boolean isNotSystemClass = !Constants.ORIENTDB_SYSTEM_CLASS_NAMES.contains(oClass.getName());
 			boolean isNotEdgeClass = !oClass.isSubClassOf("E");
-			return hasName && realClass && isVertexOrDocument && isNotSystemClass && isNotEdgeClass;
+			boolean isInheritedFromVertexOrDocument = isInheritedFromVertexOrDocument(oClass);
+			return hasName && realClass && (isVertexOrDocument || isInheritedFromVertexOrDocument ) && isNotSystemClass && isNotEdgeClass;
+		}
+		
+		private boolean isInheritedFromVertexOrDocument(OClass oClass) {
+			for (OClass currectClass : oClass.getSuperClasses()) {
+				if ((currectClass.isSubClassOf("V") || currectClass.getSuperClasses().isEmpty())) {
+					logger.info(currectClass.getName()+":true");
+					return true;
+				}				
+			}			
+			return false;
 		}
 
 	}
