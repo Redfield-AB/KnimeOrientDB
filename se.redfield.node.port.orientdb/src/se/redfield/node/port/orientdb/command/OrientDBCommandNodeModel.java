@@ -10,10 +10,12 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
@@ -24,6 +26,7 @@ import java.util.stream.Collectors;
 
 import javax.json.JsonArray;
 import javax.json.JsonNumber;
+import javax.json.JsonObject;
 import javax.json.JsonString;
 import javax.json.JsonValue;
 import javax.json.JsonValue.ValueType;
@@ -482,11 +485,10 @@ public class OrientDBCommandNodeModel extends NodeModel implements FlowVariableP
     @SuppressWarnings({ "unchecked", "rawtypes" })
 	private void setCollectionValueFromJson(ODatabaseSession databaseSession,OElement saveElement,String columnName,JsonValue jsonValue) {
     	OClass orientDbClass = saveElement.getSchemaType().get();
-    	if (!orientDbClass.existsProperty(columnName)) {
+    	OProperty property = orientDbClass.getProperty(columnName);
+    	if (property == null) {
     		return;    		
     	}
-    	OProperty property = orientDbClass.getProperty(columnName);
-    	
     	OType type = property.getType();
     	
     	if (jsonValue.getValueType().equals(ValueType.ARRAY)) {
@@ -510,6 +512,10 @@ public class OrientDBCommandNodeModel extends NodeModel implements FlowVariableP
 				}
 			}
 			    			
+		}else if (type.equals(OType.EMBEDDEDMAP)) {
+			JsonObject jsonObject = (JsonObject) jsonValue;
+			Map map = JsonUtils.convertToMap(databaseSession,property, jsonObject);
+			saveElement.setProperty(columnName, map, OType.EMBEDDEDMAP);
 		}
     	
     }

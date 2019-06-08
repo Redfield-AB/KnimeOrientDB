@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.Map.Entry;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
@@ -22,6 +23,8 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import javax.json.JsonValue;
 
 import org.knime.base.util.flowvariable.FlowVariableProvider;
 import org.knime.base.util.flowvariable.FlowVariableResolver;
@@ -72,6 +75,8 @@ import com.orientechnologies.orient.core.id.ORecordId;
 import com.orientechnologies.orient.core.metadata.schema.OClass;
 import com.orientechnologies.orient.core.metadata.schema.OProperty;
 import com.orientechnologies.orient.core.metadata.schema.OType;
+import com.orientechnologies.orient.core.record.OElement;
+import com.orientechnologies.orient.core.record.impl.ODocument;
 import com.orientechnologies.orient.core.sql.executor.OResult;
 import com.orientechnologies.orient.core.sql.executor.OResultInternal;
 import com.orientechnologies.orient.core.sql.executor.OResultSet;
@@ -348,6 +353,7 @@ public class OrientDBQueryNodeModel extends NodeModel implements FlowVariablePro
 			} else if (dataType.equals(Constants.JSON_CELL_FACTORY.getDataType())) {
 				// show as is
 				Object value = result.getProperty(fieldName);
+				logger.info("value class : "+value.getClass().getName());
 				try {
 					String json = "{}";
 					if (value instanceof ORidBag) {
@@ -378,7 +384,29 @@ public class OrientDBQueryNodeModel extends NodeModel implements FlowVariablePro
 								json = Constants.OBJECT_MAPPER.writeValueAsString(value);
 							}							
 						}
-						
+					} else if (value instanceof Map) {
+						Map map = (Map) value;
+						StringBuilder buffer = new StringBuilder(10_000);
+						buffer.append("{");
+						for (Iterator<Entry<Object,Object>> it = map.entrySet().iterator();it.hasNext();) {
+							Map.Entry<Object, Object> entry = it.next();
+							logger.info("key : "+Constants.OBJECT_MAPPER.writeValueAsString(entry.getKey()));
+							buffer.append(Constants.OBJECT_MAPPER.writeValueAsString(entry.getKey())).append(":");
+							logger.info("value : "+entry.getValue().getClass().getName());
+							if (entry.getValue() instanceof OResultInternal) {
+								//value if object
+								OResultInternal element = (OResultInternal) entry.getValue() ;
+								buffer.append(element.toJSON())	;							
+							} else {
+								buffer.append(Constants.OBJECT_MAPPER.writeValueAsString(entry.getValue()));
+							}
+							if (it.hasNext()) {
+								buffer.append(", ");
+							}							
+						}
+						buffer.append("}");
+						json = buffer.toString();
+						logger.info("map json : "+json);
 					} else {
 						json = Constants.OBJECT_MAPPER.writeValueAsString(value);
 					}

@@ -1,17 +1,16 @@
 package se.redfield.node.port.orientdb.command;
 
-import java.io.StringWriter;
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Map.Entry;
 
-import javax.json.Json;
 import javax.json.JsonNumber;
 import javax.json.JsonObject;
 import javax.json.JsonString;
 import javax.json.JsonValue;
 import javax.json.JsonValue.ValueType;
-import javax.json.JsonWriter;
 
 import com.orientechnologies.orient.core.db.ODatabaseSession;
 import com.orientechnologies.orient.core.metadata.schema.OClass;
@@ -20,6 +19,28 @@ import com.orientechnologies.orient.core.metadata.schema.OType;
 import com.orientechnologies.orient.core.record.OElement;
 
 public class JsonUtils {
+	
+	@SuppressWarnings({ "rawtypes", "unchecked"})
+	public static Map convertToMap(ODatabaseSession databaseSession,OProperty property, JsonObject jsonObject) {
+		Map map = new HashMap();
+		OClass linkedClass = property.getLinkedClass();
+		for (Iterator<Entry<String, JsonValue>> it = jsonObject.entrySet().iterator(); it.hasNext();) {
+			Entry<String, JsonValue> entry = it.next();
+			if (linkedClass == null) {
+				//embedded map with primitive values
+				Object primitiveValue = getRequiredPrimitiveValue(property, entry.getValue());
+				map.put(entry.getKey(), primitiveValue);
+			} else {
+				//embedded map with object values
+				OElement objectValue = getRequiredObjectValue(databaseSession, property, entry.getValue());
+				map.put(entry.getKey(), objectValue);
+			}
+		}
+		return map;
+
+	}
+	
+	
 	public static Object getRequiredPrimitiveValue(OProperty property, JsonValue currentValue) {
 		Object resultValue = null;
 		if (currentValue.getValueType().equals(ValueType.STRING)) {
