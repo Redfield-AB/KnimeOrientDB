@@ -54,6 +54,7 @@ import com.orientechnologies.orient.core.sql.executor.OResult;
 import com.orientechnologies.orient.core.sql.executor.OResultSet;
 
 import se.redfield.node.port.orientdb.Constants;
+import se.redfield.node.port.orientdb.Messages;
 import se.redfield.node.port.orientdb.connection.OrientDBConnectionPortObject;
 import se.redfield.node.port.orientdb.connection.OrientDBConnectionPortObjectSpec;
 import se.redfield.node.port.orientdb.connection.OrientDBConnectionSettings;
@@ -105,7 +106,7 @@ public class OrientDBFunctionNodeModel extends NodeModel {
 		}
 		logger.info("==configure ==");		
 		if (m_function.getStringValue() == null || m_function.getStringValue().isEmpty()) {
-			 throw new InvalidSettingsException("Database haven't functions!");
+			 throw new InvalidSettingsException(Messages.NO_FUNCTION);
 		}
 		logger.info("function :" + m_function.getStringValue());
 		existsInputFlowVariables =  (inSpecs[OrientDBFunctionNodeModel.FLOW_VARIABLE_INDEX] != null);
