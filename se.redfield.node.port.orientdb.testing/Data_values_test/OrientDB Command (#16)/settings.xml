@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns="http://www.knime.org/2008/09/XMLConfig" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.knime.org/2008/09/XMLConfig http://www.knime.org/XMLConfig_2008_09.xsd" key="settings.xml">
+<entry key="node_file" type="xstring" value="settings.xml"/>
+<config key="flow_stack"/>
+<config key="internal_node_subsettings">
+<entry key="memory_policy" type="xstring" value="CacheSmallInMemory"/>
+</config>
+<config key="model">
+<config key="Mode_Internals">
+<entry key="SettingsModelID" type="xstring" value="SMID_string"/>
+<entry key="EnabledStatus" type="xboolean" value="true"/>
+</config>
+<entry key="Mode" type="xstring" value="Write table to class"/>
+<config key="Execution_Internals">
+<entry key="SettingsModelID" type="xstring" value="SMID_string"/>
+<entry key="EnabledStatus" type="xboolean" value="true"/>
+</config>
+<entry key="Execution" type="xstring" value="Use parallel execution"/>
+<config key="Command_Internals">
+<entry key="SettingsModelID" type="xstring" value="SMID_string"/>
+<entry key="EnabledStatus" type="xboolean" value="true"/>
+</config>
+<entry key="Command" type="xstring" value=""/>
+<config key="Class_Internals">
+<entry key="SettingsModelID" type="xstring" value="SMID_string"/>
+<entry key="EnabledStatus" type="xboolean" value="true"/>
+</config>
+<entry key="Class" type="xstring" value="Test"/>
+<config key="Column with command_Internals">
+<entry key="SettingsModelID" type="xstring" value="SMN_string_disact"/>
+<entry key="EnabledStatus" type="xboolean" value="false"/>
+</config>
+<entry key="Column with command" type="xstring" value="Zoned Date Time"/>
+<entry key="Column with command_BOOL" type="xboolean" value="false"/>
+<config key="Fields_Internals">
+<entry key="SettingsModelID" type="xstring" value="SMID_filterString"/>
+<entry key="EnabledStatus" type="xboolean" value="true"/>
+</config>
+<config key="Fields">
+<config key="InclList">
+<entry key="array-size" type="xint" value="10"/>
+<entry key="0" type="xstring" value="StringCol"/>
+<entry key="1" type="xstring" value="IntCol"/>
+<entry key="2" type="xstring" value="LongCol"/>
+<entry key="3" type="xstring" value="DoubleCol"/>
+<entry key="4" type="xstring" value="BooleanCol"/>
+<entry key="5" type="xstring" value="LongStringColumnNameLongStringColumnNameLongStringColumnNameLongStringColumnNameLongStringColumnNameLongStringColumnNameLongStringColumnNameLongStringColumnNameLongStringColumnNameLongStringColumnNameLongStringColumnNameLongStringColumnNameLongStringColumnNameLongStringColumnNameLongStringColumnNameLongStringColumnName"/>
+<entry key="6" type="xstring" value="LongDoubleColumnNameLongDoubleColumnNameLongDoubleColumnNameLongDoubleColumnNameLongDoubleColumnNameLongDoubleColumnNameLongDoubleColumnNameLongDoubleColumnNameLongDoubleColumnNameLongDoubleColumnNameLongDoubleColumnNameLongDoubleColumnNameLongDoubleColumnNameLongDoubleColumnNameLongDoubleColumnNameLongDoubleColumnName"/>
+<entry key="7" type="xstring" value="Local Date"/>
+<entry key="8" type="xstring" value="Local Date Time"/>
+<entry key="9" type="xstring" value="Zoned Date Time"/>
+</config>
+<config key="ExclList">
+<entry key="array-size" type="xint" value="1"/>
+<entry key="0" type="xstring" value="StringListCol"/>
+</config>
+<entry key="keep_all_columns_selected" type="xboolean" value="false"/>
+</config>
+<config key="Use upsert_Internals">
+<entry key="SettingsModelID" type="xstring" value="SMID_boolean"/>
+<entry key="EnabledStatus" type="xboolean" value="true"/>
+</config>
+<entry key="Use upsert" type="xboolean" value="false"/>
+</config>
+<entry key="customDescription" type="xstring" isnull="true" value=""/>
+<entry key="state" type="xstring" value="CONFIGURED"/>
+<entry key="factory" type="xstring" value="se.redfield.node.port.orientdb.command.OrientDBCommandNodeFactory"/>
+<entry key="node-name" type="xstring" value="OrientDB Command"/>
+<entry key="node-bundle-name" type="xstring" value="OrientDB extension nodes"/>
+<entry key="node-bundle-symbolic-name" type="xstring" value="se.redfield.node.port.orientdb"/>
+<entry key="node-bundle-vendor" type="xstring" value="Redfield AB"/>
+<entry key="node-bundle-version" type="xstring" value="2.0.80.201906081150"/>
+<entry key="node-feature-name" type="xstring" isnull="true" value=""/>
+<entry key="node-feature-symbolic-name" type="xstring" isnull="true" value=""/>
+<entry key="node-feature-vendor" type="xstring" isnull="true" value=""/>
+<entry key="node-feature-version" type="xstring" value="0.0.0"/>
+<config key="factory_settings"/>
+<entry key="name" type="xstring" value="OrientDB Command"/>
+<entry key="hasContent" type="xboolean" value="false"/>
+<entry key="isInactive" type="xboolean" value="false"/>
+<config key="ports">
+<config key="port_1">
+<entry key="index" type="xint" value="1"/>
+<entry key="port_dir_location" type="xstring" isnull="true" value=""/>
+</config>
+<config key="port_2">
+<entry key="index" type="xint" value="2"/>
+<entry key="port_dir_location" type="xstring" isnull="true" value=""/>
+</config>
+<config key="port_3">
+<entry key="index" type="xint" value="3"/>
+<entry key="port_dir_location" type="xstring" isnull="true" value=""/>
+</config>
+</config>
+<config key="filestores">
+<entry key="file_store_location" type="xstring" isnull="true" value=""/>
+<entry key="file_store_id" type="xstring" isnull="true" value=""/>
+</config>
+</config>
