@@ -137,7 +137,7 @@ public class OrientDBCommandNodeModel extends NodeModel implements FlowVariableP
     private final SettingsModelString m_command = new SettingsModelString(CFGKEY_COMMAND, null);
     private final SettingsModelString m_class = new SettingsModelString(CFGKEY_CLASS, null);
     private final SettingsModelFilterString m_fields = new SettingsModelFilterString(CFGKEY_FIELDS);
-    private final SettingsModelOptionalString m_column_with_command = new SettingsModelOptionalString(CFGKEY_COLUMN_WITH_COMMAND, null,false);
+    private final SettingsModelString m_column_with_command = new SettingsModelString(CFGKEY_COLUMN_WITH_COMMAND, null);
     private final SettingsModelBoolean m_use_upsert = new SettingsModelBoolean(CFGKEY_UPSERT,false);
     
     static final int DATA_TABLE_INDEX = 0;
