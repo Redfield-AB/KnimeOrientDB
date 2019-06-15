@@ -22,7 +22,8 @@
 		  <option name="Classes and Fields">Fetched from the connected database according to the schema. Can be used as the wildcards in the query text.</option>
 	</fullDescription>
 	<ports>
-		<inPort index="0" name="OrientDB connection">OrientDB Connection.</inPort>
+		<inPort index="0" name="OrientDB connection">Input data table.</inPort>
+		<inPort index="1" name="OrientDB connection">OrientDB Connection.</inPort>
 		<outPort index="0" name="Output data table">Output data table.</outPort>
 		<outPort index="1" name="OrientDB connection">OrientDB Connection.</outPort>		
 	</ports>
