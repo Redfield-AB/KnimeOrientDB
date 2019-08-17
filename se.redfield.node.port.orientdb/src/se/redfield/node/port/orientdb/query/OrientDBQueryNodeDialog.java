@@ -2,8 +2,6 @@ package se.redfield.node.port.orientdb.query;
 
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Arrays;
@@ -20,6 +18,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
+import javax.swing.LayoutStyle;
 import javax.swing.SwingConstants;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -88,6 +87,7 @@ public class OrientDBQueryNodeDialog extends AbstractOrientDBNodeDialogPane {
 
 	private OrientDBConnectionSettings connectionSettings;
 	private JCheckBox generateRowIdCheckBox;
+	private JCheckBox loadAsJson;
 
 	protected OrientDBQueryNodeDialog() {
 		super();
@@ -160,7 +160,8 @@ public class OrientDBQueryNodeDialog extends AbstractOrientDBNodeDialogPane {
 	        javax.swing.JSplitPane queryShemaSplitPane = new javax.swing.JSplitPane();
 	        javax.swing.JScrollPane queryScrollPane = new javax.swing.JScrollPane();
 	        javax.swing.JPanel queryPanel = new javax.swing.JPanel();
-	        generateRowIdCheckBox = new javax.swing.JCheckBox();
+	        generateRowIdCheckBox = new JCheckBox();
+	        loadAsJson = new JCheckBox();
 	        queryTextPane = new javax.swing.JTextPane();
 	        schemaScrollPane = new javax.swing.JScrollPane();
 	        javax.swing.JPanel takeSchemaPanel = new javax.swing.JPanel();
@@ -206,33 +207,41 @@ public class OrientDBQueryNodeDialog extends AbstractOrientDBNodeDialogPane {
 	        queryScrollPane.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black), "Query"));
 
 	        generateRowIdCheckBox.setText("Generate RowId by @rid?");
+	        loadAsJson.setText("Load collection fields as Json?");
 
 	        javax.swing.GroupLayout queryPanelLayout = new javax.swing.GroupLayout(queryPanel);
 	        queryPanel.setLayout(queryPanelLayout);
 	        queryPanelLayout.setHorizontalGroup(
-	            queryPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-	            .addGroup(queryPanelLayout.createSequentialGroup()
-	                .addComponent(generateRowIdCheckBox, javax.swing.GroupLayout.PREFERRED_SIZE, 302, javax.swing.GroupLayout.PREFERRED_SIZE)
-	                .addGap(0, 312, Short.MAX_VALUE))
-	            .addGroup(queryPanelLayout.createSequentialGroup()
-	                .addContainerGap()
-	                .addComponent(queryTextPane)
-	                .addContainerGap())
-	        );
-	        queryPanelLayout.setVerticalGroup(
-	            queryPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-	            .addGroup(queryPanelLayout.createSequentialGroup()
-	                .addComponent(generateRowIdCheckBox)
-	                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-	                .addComponent(queryTextPane, javax.swing.GroupLayout.DEFAULT_SIZE, 273, Short.MAX_VALUE)
-	                .addContainerGap())
-	        );
+		            queryPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+		            .addGroup(queryPanelLayout.createSequentialGroup()
+		                .addComponent(generateRowIdCheckBox, GroupLayout.PREFERRED_SIZE, 302, GroupLayout.PREFERRED_SIZE)
+		                .addGap(0, 20, Short.MAX_VALUE)
+		                .addComponent(loadAsJson, GroupLayout.PREFERRED_SIZE, 302, GroupLayout.PREFERRED_SIZE)
+//		                .addGap(0, 20, Short.MAX_VALUE)
+		                )
+		            .addGroup(queryPanelLayout.createSequentialGroup()
+		                .addContainerGap()
+		                .addComponent(queryTextPane)
+		                .addContainerGap())
+		        );
+		        queryPanelLayout.setVerticalGroup(
+		            queryPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+		            .addGroup(queryPanelLayout.createSequentialGroup()
+		            		.addGroup(queryPanelLayout.createParallelGroup()
+		            				.addComponent(generateRowIdCheckBox)
+		            				.addComponent(loadAsJson)
+//		            				.addGap(0, 5, Short.MAX_VALUE)
+		            				)
+		                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+		                .addComponent(queryTextPane, GroupLayout.DEFAULT_SIZE, 273, Short.MAX_VALUE)
+		                .addContainerGap())
+		        );
 
 	        queryScrollPane.setViewportView(queryPanel);
 
 	        queryShemaSplitPane.setBottomComponent(queryScrollPane);
 
-	        schemaScrollPane.setBorder(javax.swing.BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black), "Schema"));
+	        schemaScrollPane.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black), "Schema"));
 
 	        takeSchemaLabel.setHorizontalAlignment(SwingConstants.RIGHT);
 	        takeSchemaLabel.setText("Take schema from :");
@@ -320,10 +329,6 @@ public class OrientDBQueryNodeDialog extends AbstractOrientDBNodeDialogPane {
                     .addComponent(useParallelExecution))
                 .addContainerGap(339, Short.MAX_VALUE))
         );
-		
-		
-		
-
 		super.addTab(TABLE_QUERY_SETTINGS, settingPanel, true);
 	}
 	
