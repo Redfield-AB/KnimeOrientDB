@@ -12,15 +12,18 @@ import org.knime.core.data.def.StringCell;
 import com.orientechnologies.orient.core.metadata.schema.OType;
 
 public class Mapping {
-	
-	
+
 	public static DataType mapToDataType(OType oType) {
+		return mapToDataType(oType, true);
+	}
+
+	public static DataType mapToDataType(OType oType, boolean showCollectionsAsJson) {
 		DataType dataType = null;
 		switch (oType) {
 		case STRING:
 		case LINK:
 			dataType = StringCell.TYPE;
-			break;		
+			break;
 		case INTEGER:
 		case SHORT:
 			dataType = IntCell.TYPE;
@@ -35,18 +38,23 @@ public class Mapping {
 		case BOOLEAN:
 			dataType = BooleanCell.TYPE;
 			break;
-		case DATE:			
+		case DATE:
 		case DATETIME:
 			dataType = DateAndTimeCell.TYPE;
 			break;
 		case LINKBAG:
 		case EMBEDDEDSET:
 		case EMBEDDEDLIST:
-		case EMBEDDEDMAP:			
-//			dataType = ListCell.getCollectionType(StringCell.TYPE);
+			if (showCollectionsAsJson) {
+				dataType = Constants.JSON_CELL_FACTORY.getDataType();
+			} else {
+				dataType = ListCell.getCollectionType(StringCell.TYPE);
+			}
+			break;
+		case EMBEDDEDMAP:
 			dataType = Constants.JSON_CELL_FACTORY.getDataType();
-			break;	
-			
+			break;
+
 		default:
 			break;
 		}

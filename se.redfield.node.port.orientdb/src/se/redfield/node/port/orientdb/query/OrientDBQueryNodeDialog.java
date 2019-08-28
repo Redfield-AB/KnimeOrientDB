@@ -162,6 +162,7 @@ public class OrientDBQueryNodeDialog extends AbstractOrientDBNodeDialogPane {
 	        javax.swing.JPanel queryPanel = new javax.swing.JPanel();
 	        generateRowIdCheckBox = new JCheckBox();
 	        loadAsJson = new JCheckBox();
+	        loadAsJson.setSelected(true);
 	        queryTextPane = new javax.swing.JTextPane();
 	        schemaScrollPane = new javax.swing.JScrollPane();
 	        javax.swing.JPanel takeSchemaPanel = new javax.swing.JPanel();
@@ -424,6 +425,7 @@ public class OrientDBQueryNodeDialog extends AbstractOrientDBNodeDialogPane {
 	protected void saveSettingsTo(NodeSettingsWO settings) throws InvalidSettingsException {
 		settings.addString(OrientDBQueryNodeModel.CFGKEY_QUERY, queryTextPane.getText());
 		settings.addBoolean(OrientDBQueryNodeModel.CFGKEY_GENERATE_ROWID_BY_RID, generateRowIdCheckBox.isSelected());
+		settings.addBoolean(OrientDBQueryNodeModel.CFGKEY_LOAD_AS_JSON, loadAsJson.isSelected());
 		settings.addBoolean(OrientDBQueryNodeModel.CFGKEY_USE_PARALLEL, useParallelExecution.isSelected());
 		
 		settings.addString(CFGKEY_SELECTED_FLOW_VARIABLES, flowVariablesList.getSelectedValue());

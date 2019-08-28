@@ -101,7 +101,8 @@ public class OrientDBQueryNodeModel extends NodeModel implements FlowVariablePro
     
     // the logger instance
 	public static final String CFGKEY_QUERY = "Query";
-	public static final String CFGKEY_GENERATE_ROWID_BY_RID = "Generate RowId by @rid?";
+	public static final String CFGKEY_GENERATE_ROWID_BY_RID = "GENERATE_ROWID_BY_RID";
+	public static final String CFGKEY_LOAD_AS_JSON = "LOAD_AS_JSON";
 	public static final String CFGKEY_USE_PARALLEL = "USE_PARALLEL";
 	public static final int ANALYZE_ROWS_COUNT = 100;
 	
@@ -113,6 +114,7 @@ public class OrientDBQueryNodeModel extends NodeModel implements FlowVariablePro
     private DataTableSpec configuredTableSpec = null;
     private final SettingsModelString m_query = new SettingsModelString(CFGKEY_QUERY, null);
     private final SettingsModelBoolean m_generate_rowid_by_rid = new SettingsModelBoolean(CFGKEY_GENERATE_ROWID_BY_RID, Boolean.FALSE);
+    private final SettingsModelBoolean m_load_as_json = new SettingsModelBoolean(CFGKEY_LOAD_AS_JSON, Boolean.TRUE);
     private final SettingsModelString m_schema_source = new SettingsModelString(OrientDBQueryNodeDialog.CFGKEY_SCHEMA_SOURCE, OrientDBQueryNodeDialog.DEFAUT_SCHEMA_SOURCE);
     private final SettingsModelBoolean m_use_parallel= new SettingsModelBoolean(CFGKEY_USE_PARALLEL, Boolean.FALSE);
     private final SettingsModelString m_column_with_query = new SettingsModelString(OrientDBQueryNodeDialog.CFGKEY_QUERY_FIELD, null);
@@ -559,9 +561,11 @@ public class OrientDBQueryNodeModel extends NodeModel implements FlowVariablePro
     private List<DataColumnSpec> prepareColumns(Map<String, OType> fieldTypeMap) {
     	List<DataColumnSpec> columns = new LinkedList<DataColumnSpec>();
     	for (Map.Entry<String, OType> entry : fieldTypeMap.entrySet()) {
-    		logger.info("field "+entry.getKey()+"; value "+Mapping.mapToDataType(entry.getValue()));
+    		
+    		logger.info("field "+entry.getKey()+"; value "+Mapping.mapToDataType(entry.getValue(),m_load_as_json.getBooleanValue())
+    		+"; show as json ? :"+m_load_as_json.getBooleanValue());
 			DataColumnSpec columnSpec = new DataColumnSpecCreator(entry.getKey(),
-					Mapping.mapToDataType(entry.getValue())).createSpec();
+					Mapping.mapToDataType(entry.getValue(),m_load_as_json.getBooleanValue())).createSpec();
 			columns.add(columnSpec);
 		}
     	return columns;
@@ -576,6 +580,7 @@ public class OrientDBQueryNodeModel extends NodeModel implements FlowVariablePro
         m_generate_rowid_by_rid.saveSettingsTo(settings);
         m_schema_source.saveSettingsTo(settings);
         m_use_parallel.saveSettingsTo(settings);
+        m_load_as_json.saveSettingsTo(settings);
 		if (m_column_with_query.getStringValue() != null) {
 			m_column_with_query.saveSettingsTo(settings);
 		}
@@ -590,6 +595,7 @@ public class OrientDBQueryNodeModel extends NodeModel implements FlowVariablePro
 		m_generate_rowid_by_rid.loadSettingsFrom(settings);
 		m_schema_source.loadSettingsFrom(settings);
 		m_use_parallel.loadSettingsFrom(settings);
+		m_load_as_json.loadSettingsFrom(settings);
 		try {
 			m_column_with_query.loadSettingsFrom(settings);
 		} catch (InvalidSettingsException e) {
@@ -604,6 +610,7 @@ public class OrientDBQueryNodeModel extends NodeModel implements FlowVariablePro
 	@Override
 	protected void validateSettings(final NodeSettingsRO settings) throws InvalidSettingsException {
 		m_query.validateSettings(settings);
+		m_load_as_json.validateSettings(settings);
 		m_generate_rowid_by_rid.validateSettings(settings);
 		m_schema_source.validateSettings(settings);
 		m_use_parallel.validateSettings(settings);

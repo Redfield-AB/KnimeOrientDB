@@ -457,6 +457,15 @@ public class OrientDBCommandNodeModel extends NodeModel implements FlowVariableP
 					JSONCell cell = (JSONCell) dataRow.getCell(index);
 					JsonValue jsonValue = cell.getJsonValue();
 					setCollectionValueFromJson(databaseSession,saveElement,columnName,jsonValue);
+				} else if (dataType.equals(ListCell.getCollectionType(StringCell.TYPE))) {
+						ListCell cell = (ListCell) dataRow.getCell(index);
+						List<String> values = cell.stream().map((DataCell dc)->{
+							return (StringCell) dc;
+						}).map((StringCell sc)->{
+							return sc.getStringValue();
+						}).collect(Collectors.toList());
+						saveElement.setProperty(columnName, values);
+						
 				}  else {
 					// @TODO support other types
 					throw new UnsupportedOperationException("Unsupported cell type " + dataType + " (class : "+dataType.getCellClass().getName()+") !");
