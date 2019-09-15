@@ -14,10 +14,10 @@ import com.orientechnologies.orient.core.metadata.schema.OType;
 public class Mapping {
 
 	public static DataType mapToDataType(OType oType) {
-		return mapToDataType(oType, true);
+		return mapToDataType(oType, null, true);
 	}
 
-	public static DataType mapToDataType(OType oType, boolean showCollectionsAsJson) {
+	public static DataType mapToDataType(OType oType, OType collectionValueType, boolean showCollectionsAsJson) {
 		DataType dataType = null;
 		switch (oType) {
 		case STRING:
@@ -48,7 +48,8 @@ public class Mapping {
 			if (showCollectionsAsJson) {
 				dataType = Constants.JSON_CELL_FACTORY.getDataType();
 			} else {
-				dataType = ListCell.getCollectionType(StringCell.TYPE);
+				DataType collectionDataType = mapToDataType(collectionValueType, null, false);
+				dataType = ListCell.getCollectionType(collectionDataType);
 			}
 			break;
 		case EMBEDDEDMAP:

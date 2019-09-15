@@ -16,6 +16,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
@@ -42,6 +43,7 @@ import org.knime.core.data.DataType;
 import org.knime.core.data.MissingCell;
 import org.knime.core.data.collection.CollectionCellFactory;
 import org.knime.core.data.collection.ListCell;
+import org.knime.core.data.collection.SetCell;
 import org.knime.core.data.container.CloseableRowIterator;
 import org.knime.core.data.date.DateAndTimeCell;
 import org.knime.core.data.date.DateAndTimeCellFactory;
@@ -101,6 +103,7 @@ import se.redfield.node.port.orientdb.connection.OrientDBConnectionSettings;
 import se.redfield.node.port.orientdb.util.CredentionalUtil;
 import se.redfield.node.port.orientdb.util.DateTimeUtils;
 import se.redfield.node.port.orientdb.util.FutureUtil;
+import se.redfield.node.port.orientdb.util.JaksonUtil;
 import se.redfield.node.port.orientdb.util.OrientDbUtil;
 
 
@@ -270,7 +273,6 @@ public class OrientDBCommandNodeModel extends NodeModel implements FlowVariableP
 					sourceDataRows.clear();
 					processTasks(tasks,rowCounter,commandsCount,exec,container);
 				}
-
 			}
 			if (!sourceDataRows.isEmpty()) {
 				logger.infoWithFormat("last partision: %s", sourceDataRows.size());
@@ -297,6 +299,7 @@ public class OrientDBCommandNodeModel extends NodeModel implements FlowVariableP
 			@Override
 			public Callable<DataRow> apply(DataRow currectDataRow) {
 				return new Callable<DataRow>() {
+					@SuppressWarnings("static-access")
 					@Override
 					public DataRow call() throws Exception {
 						List<DataCell> currentCells = new LinkedList<>();
@@ -376,6 +379,7 @@ public class OrientDBCommandNodeModel extends NodeModel implements FlowVariableP
 			try (OResultSet resultSet = databaseSession.command(command)) {
 				if (resultSet.hasNext()) {
 					OResult oResult = resultSet.next();
+					logger.info("Result JSON :"+oResult.toJSON());
 					pushFlowVariableString(COMMAND_RESULT_COLUMN, oResult.toJSON());
 					DataRow newRow = new DefaultRow(COMMAND_RESULT_COLUMN,
 							Constants.JSON_CELL_FACTORY.createCell(oResult.toJSON()));
@@ -422,21 +426,11 @@ public class OrientDBCommandNodeModel extends NodeModel implements FlowVariableP
 			DataColumnSpec dataColumnSpec = dataTableSpec.getColumnSpec(index);
 			DataType dataType = dataColumnSpec.getType();
 			if (!dataRow.getCell(index).isMissing()) {
-				if (dataType.equals(StringCell.TYPE)) {
-					StringCell cell = (StringCell) dataRow.getCell(index);
-					saveElement.setProperty(columnName, cell.getStringValue(), OType.STRING);
-				} else if (dataType.equals(LongCell.TYPE)) {
-					LongCell cell = (LongCell) dataRow.getCell(index);
-					saveElement.setProperty(columnName, cell.getLongValue(), OType.LONG);
-				} else if (dataType.equals(BooleanCell.TYPE)) {
-					BooleanCell cell = (BooleanCell) dataRow.getCell(index);
-					saveElement.setProperty(columnName, cell.getBooleanValue(), OType.BOOLEAN);
-				} else if (dataType.equals(IntCell.TYPE)) {
-					IntCell cell = (IntCell) dataRow.getCell(index);
-					saveElement.setProperty(columnName, cell.getIntValue(), OType.INTEGER);
-				} else if (dataType.equals(DoubleCell.TYPE)) {
-					DoubleCell cell = (DoubleCell) dataRow.getCell(index);
-					saveElement.setProperty(columnName, cell.getDoubleValue(), OType.DOUBLE);
+				logger.info(columnName +":"+dataType.toPrettyString());
+
+				Object cellValue = DataTypeUtil.getDataCellValue(dataRow.getCell(index));
+				if (cellValue != null) {
+					saveElement.setProperty(columnName, cellValue);
 				} else if (dataType.equals(DateAndTimeCell.TYPE)) {
 					DateAndTimeCell cell = (DateAndTimeCell) dataRow.getCell(index);
 					long utcTimeInMillis = cell.getUTCTimeInMillis();
@@ -456,19 +450,23 @@ public class OrientDBCommandNodeModel extends NodeModel implements FlowVariableP
 				} else if (dataType.equals(JSONCell.TYPE)) {
 					JSONCell cell = (JSONCell) dataRow.getCell(index);
 					JsonValue jsonValue = cell.getJsonValue();
-					setCollectionValueFromJson(databaseSession,saveElement,columnName,jsonValue);
-				} else if (dataType.equals(ListCell.getCollectionType(StringCell.TYPE))) {
-						ListCell cell = (ListCell) dataRow.getCell(index);
-						List<String> values = cell.stream().map((DataCell dc)->{
-							return (StringCell) dc;
-						}).map((StringCell sc)->{
-							return sc.getStringValue();
-						}).collect(Collectors.toList());
-						saveElement.setProperty(columnName, values);
-						
-				}  else {
+					setCollectionValueFromJson(databaseSession, saveElement, columnName, jsonValue);
+				} else if (dataType.getCellClass().equals(ListCell.class)) {
+					ListCell cell = (ListCell) dataRow.getCell(index);
+					List<Object> values = cell.stream().map((DataCell dc) -> {
+						return DataTypeUtil.getDataCellValue(dc);
+					}).collect(Collectors.toList());
+					saveElement.setProperty(columnName, values);
+				} else if (dataType.getCellClass().equals(SetCell.class)) {
+					SetCell cell = (SetCell) dataRow.getCell(index);
+					Set<Object> values = cell.stream().map((DataCell dc) -> {
+						return DataTypeUtil.getDataCellValue(dc);
+					}).collect(Collectors.toSet());
+					saveElement.setProperty(columnName, values);
+				} else {
 					// @TODO support other types
-					throw new UnsupportedOperationException("Unsupported cell type " + dataType + " (class : "+dataType.getCellClass().getName()+") !");
+					throw new UnsupportedOperationException("Unsupported cell type " + dataType + " (class : "
+							+ dataType.getCellClass().getName() + ") !");
 				}
 			}
 		}
@@ -476,7 +474,8 @@ public class OrientDBCommandNodeModel extends NodeModel implements FlowVariableP
 		String resultJson = "";
 		try {
 			ORecord saveResult = saveElement.save();
-			resultJson = saveResult.toJSON();			
+			resultJson = saveResult.toJSON();	
+			logger.info("saveDataRow : resultJson: "+resultJson);
 		} catch (ORecordDuplicatedException de) {
 			if (m_use_upsert.getBooleanValue()) {
 				// we must update the object

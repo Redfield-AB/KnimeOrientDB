@@ -64,6 +64,7 @@ public class OrientDBQueryNodeDialog extends AbstractOrientDBNodeDialogPane {
 	public static final String CFGKEY_SELECTED_SCHEMA_CLASSES = "SELECTED_CLASSES";
 	public static final String CFGKEY_SCHEMA_SOURCE = "SCHEMA_SOURCE";
 	public static final String CFGKEY_QUERY_FIELD = "QUERY_FIELD";
+	public static final String CFGKEY_LOAD_AS_JSON = "LOAD_AS_JSON";
 
 	private DefaultListModel<String> flowVariablesListModel= new DefaultListModel<>();;
 	
@@ -376,6 +377,9 @@ public class OrientDBQueryNodeDialog extends AbstractOrientDBNodeDialogPane {
 		} catch (InvalidSettingsException e1) {
 			logger.warn("Can't load values for key " + CFGKEY_SELECTED_SCHEMA_CLASSES, e1);
 		}
+		
+		loadAsJson.setSelected(settings.getBoolean(CFGKEY_LOAD_AS_JSON,true));
+		
 
 		// remove listeners
 		for (ListSelectionListener listener : classesList.getListSelectionListeners()) {

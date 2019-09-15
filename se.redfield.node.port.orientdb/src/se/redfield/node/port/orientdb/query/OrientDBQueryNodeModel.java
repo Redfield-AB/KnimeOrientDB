@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 
 import javax.json.JsonValue;
 
+import org.codehaus.groovy.reflection.stdclasses.IntegerCachedClass;
 import org.knime.base.util.flowvariable.FlowVariableProvider;
 import org.knime.base.util.flowvariable.FlowVariableResolver;
 import org.knime.core.data.DataCell;
@@ -69,6 +70,7 @@ import com.orientechnologies.orient.core.db.ODatabaseSession;
 import com.orientechnologies.orient.core.db.OrientDB;
 import com.orientechnologies.orient.core.db.OrientDBConfig;
 import com.orientechnologies.orient.core.db.record.OIdentifiable;
+import com.orientechnologies.orient.core.db.record.OTrackedList;
 import com.orientechnologies.orient.core.db.record.ridbag.ORidBag;
 import com.orientechnologies.orient.core.id.ORID;
 import com.orientechnologies.orient.core.id.ORecordId;
@@ -88,8 +90,8 @@ import se.redfield.node.port.orientdb.connection.OrientDBConnectionPortObjectSpe
 import se.redfield.node.port.orientdb.connection.OrientDBConnectionSettings;
 import se.redfield.node.port.orientdb.util.CredentionalUtil;
 import se.redfield.node.port.orientdb.util.FutureUtil;
+import se.redfield.node.port.orientdb.util.JaksonUtil;
 import se.redfield.node.port.orientdb.util.OrientDbUtil;
-
 
 /**
  * This is the model implementation of OrientDBNodeTest.
@@ -98,41 +100,42 @@ import se.redfield.node.port.orientdb.util.OrientDbUtil;
  * @author Sergey Chernolyas &lt;sergey.chernolyas@gmail.com&gt;
  */
 public class OrientDBQueryNodeModel extends NodeModel implements FlowVariableProvider {
-    
-    // the logger instance
+
+	// the logger instance
 	public static final String CFGKEY_QUERY = "Query";
 	public static final String CFGKEY_GENERATE_ROWID_BY_RID = "GENERATE_ROWID_BY_RID";
 	public static final String CFGKEY_LOAD_AS_JSON = "LOAD_AS_JSON";
 	public static final String CFGKEY_USE_PARALLEL = "USE_PARALLEL";
 	public static final int ANALYZE_ROWS_COUNT = 100;
-	
+
 	static final int ORIENTDB_CONNECTION_INDEX = 1;
 	static final int DATA_TABLE_INDEX = 0;
-	
+
 	private static final NodeLogger logger = NodeLogger.getLogger(OrientDBQueryNodeModel.class);
-    
-    private DataTableSpec configuredTableSpec = null;
-    private final SettingsModelString m_query = new SettingsModelString(CFGKEY_QUERY, null);
-    private final SettingsModelBoolean m_generate_rowid_by_rid = new SettingsModelBoolean(CFGKEY_GENERATE_ROWID_BY_RID, Boolean.FALSE);
-    private final SettingsModelBoolean m_load_as_json = new SettingsModelBoolean(CFGKEY_LOAD_AS_JSON, Boolean.TRUE);
-    private final SettingsModelString m_schema_source = new SettingsModelString(OrientDBQueryNodeDialog.CFGKEY_SCHEMA_SOURCE, OrientDBQueryNodeDialog.DEFAUT_SCHEMA_SOURCE);
-    private final SettingsModelBoolean m_use_parallel= new SettingsModelBoolean(CFGKEY_USE_PARALLEL, Boolean.FALSE);
-    private final SettingsModelString m_column_with_query = new SettingsModelString(OrientDBQueryNodeDialog.CFGKEY_QUERY_FIELD, null);
-    
-    
-    /**
-     * Constructor for the node model.
-     */
-    protected OrientDBQueryNodeModel() {    
-    	super( new PortType[]{BufferedDataTable.TYPE_OPTIONAL,OrientDBConnectionPortObject.TYPE}, 
-    			new PortType[] { BufferedDataTable.TYPE,OrientDBConnectionPortObject.TYPE});
-    }
-    
+
+	private DataTableSpec configuredTableSpec = null;
+	private final SettingsModelString m_query = new SettingsModelString(CFGKEY_QUERY, null);
+	private final SettingsModelBoolean m_generate_rowid_by_rid = new SettingsModelBoolean(CFGKEY_GENERATE_ROWID_BY_RID,
+			Boolean.FALSE);
+	private final SettingsModelBoolean m_load_as_json = new SettingsModelBoolean(CFGKEY_LOAD_AS_JSON, Boolean.TRUE);
+	private final SettingsModelString m_schema_source = new SettingsModelString(
+			OrientDBQueryNodeDialog.CFGKEY_SCHEMA_SOURCE, OrientDBQueryNodeDialog.DEFAUT_SCHEMA_SOURCE);
+	private final SettingsModelBoolean m_use_parallel = new SettingsModelBoolean(CFGKEY_USE_PARALLEL, Boolean.FALSE);
+	private final SettingsModelString m_column_with_query = new SettingsModelString(
+			OrientDBQueryNodeDialog.CFGKEY_QUERY_FIELD, null);
 
 	/**
-     * {@inheritDoc}
-     */
-    @Override
+	 * Constructor for the node model.
+	 */
+	protected OrientDBQueryNodeModel() {
+		super(new PortType[] { BufferedDataTable.TYPE_OPTIONAL, OrientDBConnectionPortObject.TYPE },
+				new PortType[] { BufferedDataTable.TYPE, OrientDBConnectionPortObject.TYPE });
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
 	protected PortObject[] execute(final PortObject[] inData, final ExecutionContext exec) throws Exception {
 		OrientDBConnectionPortObject orientDBConnectionPortObject = (OrientDBConnectionPortObject) inData[ORIENTDB_CONNECTION_INDEX];
 		logger.infoWithFormat("orientDBConnectionPortObject: %s", orientDBConnectionPortObject);
@@ -149,8 +152,8 @@ public class OrientDBQueryNodeModel extends NodeModel implements FlowVariablePro
 		AtomicLong rowCounter = new AtomicLong();
 		boolean useQueryFromTableColumn = (inData[DATA_TABLE_INDEX] != null);
 
-		try (ODatabasePool orientDBPool = new ODatabasePool(connectionSettings.getDbUrl(), connectionSettings.getDbName(),
-				userLogin.getLogin(), userLogin.getDecryptedPassword())) {
+		try (ODatabasePool orientDBPool = new ODatabasePool(connectionSettings.getDbUrl(),
+				connectionSettings.getDbName(), userLogin.getLogin(), userLogin.getDecryptedPassword())) {
 
 			DataTableSpec dataTableSpec = getConfiguredTableSpec();
 			container = exec.createDataContainer(dataTableSpec);
@@ -249,15 +252,16 @@ public class OrientDBQueryNodeModel extends NodeModel implements FlowVariablePro
 						container = exec.createDataContainer(new DataTableSpec());
 					}
 					container.close();
-				} 
+				}
 			}
 		}
 
 		BufferedDataTable out = container.getTable();
 		return new PortObject[] { out, orientDBConnectionPortObject };
 	}
-    
-    private void processTasks(List<Callable<DataRow>> tasks,AtomicLong rowCounter,long commandsCount,final ExecutionContext exec,BufferedDataContainer container) throws CanceledExecutionException {
+
+	private void processTasks(List<Callable<DataRow>> tasks, AtomicLong rowCounter, long commandsCount,
+			final ExecutionContext exec, BufferedDataContainer container) throws CanceledExecutionException {
 		List<Future<DataRow>> futures = ForkJoinPool.commonPool().invokeAll(tasks);
 		for (Future<DataRow> future : futures) {
 			while (!FutureUtil.isFinish(future)) {
@@ -265,7 +269,7 @@ public class OrientDBQueryNodeModel extends NodeModel implements FlowVariablePro
 				try {
 					Thread.sleep(50);
 				} catch (InterruptedException e) {
-					
+
 				}
 			}
 			DataRow newDataRow = null;
@@ -277,22 +281,18 @@ public class OrientDBQueryNodeModel extends NodeModel implements FlowVariablePro
 			container.addRowToTable(newDataRow);
 			exec.checkCanceled();
 			rowCounter.incrementAndGet();
-			exec.setProgress(rowCounter.doubleValue() / commandsCount,
-					"Executed " + rowCounter + " command");
+			exec.setProgress(rowCounter.doubleValue() / commandsCount, "Executed " + rowCounter + " command");
 
 		}
-		
+
 	}
-    
-    
 
 	private boolean isParallelExecution() {
 		return m_use_parallel.getBooleanValue();
 	}
 
-
 	private void processOResult(BufferedDataContainer container, SimpleDateFormat dateFormat,
-			SimpleDateFormat dateTimeFormat, DataTableSpec dataTableSpec, OResult result,AtomicLong rowCounter) {
+			SimpleDateFormat dateTimeFormat, DataTableSpec dataTableSpec, OResult result, AtomicLong rowCounter) {
 		List<DataCell> cells = new LinkedList<>();
 		if (m_schema_source.getStringValue().equals(OrientDBQueryNodeDialog.TO_JSON_SCHEMA_SOURCE)) {
 			cells.add(Constants.JSON_CELL_FACTORY.createCell(result.toJSON()));
@@ -302,44 +302,46 @@ public class OrientDBQueryNodeModel extends NodeModel implements FlowVariablePro
 				cells.add(mapToDataCell(result, columnName, columnSpec, dateFormat, dateTimeFormat));
 			}
 		}
-		
-		DataRow row = new DefaultRow(new RowKey("Row" + getRowIdentity(result,rowCounter)), cells);
+
+		DataRow row = new DefaultRow(new RowKey("Row" + getRowIdentity(result, rowCounter)), cells);
 		container.addRowToTable(row);
 	}
-	
-	private String getRowIdentity(OResult result,AtomicLong rowCounter) {
-		boolean generateRowidByRid =  m_generate_rowid_by_rid.getBooleanValue();
-		Optional<ORID>  identityOpt =  result.getIdentity();
-		String rowId  = null;
+
+	private String getRowIdentity(OResult result, AtomicLong rowCounter) {
+		boolean generateRowidByRid = m_generate_rowid_by_rid.getBooleanValue();
+		Optional<ORID> identityOpt = result.getIdentity();
+		String rowId = null;
 		if (generateRowidByRid) {
-			rowId = identityOpt.isPresent() ? identityOpt.toString() : String.valueOf(rowCounter.get());				
+			rowId = identityOpt.isPresent() ? identityOpt.toString() : String.valueOf(rowCounter.get());
 		} else {
-			rowId = String.valueOf(rowCounter.get());			
+			rowId = String.valueOf(rowCounter.get());
 		}
-		return 	rowId;
+		return rowId;
 	}
-        
-    @SuppressWarnings("deprecation")
-	private DateAndTimeCell createCell(Date value,SimpleDateFormat format) {    	
-    	return  (DateAndTimeCell) DateAndTimeCellFactory.create(format.format(value));    	
-    }
-    
-    @SuppressWarnings({ "unchecked", "rawtypes", "static-access" })
-	private DataCell mapToDataCell(OResult result, String fieldName, DataColumnSpec columnSpec, SimpleDateFormat dateFormat,
-			SimpleDateFormat dateTimeFormat) {
-    	DataCell cell = null;
-    	if (result.getProperty(fieldName) == null) {
+
+	@SuppressWarnings("deprecation")
+	private DateAndTimeCell createCell(Date value, SimpleDateFormat format) {
+		return (DateAndTimeCell) DateAndTimeCellFactory.create(format.format(value));
+	}
+
+	@SuppressWarnings({ "unchecked", "rawtypes", "static-access" })
+	private DataCell mapToDataCell(OResult result, String fieldName, DataColumnSpec columnSpec,
+			SimpleDateFormat dateFormat, SimpleDateFormat dateTimeFormat) {
+		DataCell cell = null;
+		if (result.getProperty(fieldName) == null) {
 			cell = new MissingCell("No value");
 		} else {
 			DataType dataType = columnSpec.getType();
+			logger.info("data type :" + dataType.getClass().getName());
+			logger.info("data cell class :" + dataType.getCellClass().getName());
 			if (dataType.equals(StringCell.TYPE)) {
 				Object value = result.getProperty(fieldName);
 				if (value instanceof ORecordId) {
 					ORecordId rid = (ORecordId) value;
-					cell = new StringCell(rid.toString());	
+					cell = new StringCell(rid.toString());
 				} else {
-					cell = new StringCell((String) value);					
-				}				
+					cell = new StringCell((String) value);
+				}
 			} else if (dataType.equals(LongCell.TYPE)) {
 				cell = new LongCell(result.getProperty(fieldName));
 			} else if (dataType.equals(DoubleCell.TYPE)) {
@@ -351,11 +353,11 @@ public class OrientDBQueryNodeModel extends NodeModel implements FlowVariablePro
 				cell = (value ? BooleanCell.TRUE : BooleanCell.FALSE);
 			} else if (dataType.equals(DateAndTimeCell.TYPE)) {
 				Date dateTimeValue = result.getProperty(fieldName);
-				cell = (createCell(dateTimeValue, dateTimeFormat));	
+				cell = (createCell(dateTimeValue, dateTimeFormat));
 			} else if (dataType.equals(Constants.JSON_CELL_FACTORY.getDataType())) {
 				// show as is
 				Object value = result.getProperty(fieldName);
-				logger.info("value class : "+value.getClass().getName());
+				logger.info("value class : " + value.getClass().getName());
 				try {
 					String json = "{}";
 					if (value instanceof ORidBag) {
@@ -366,102 +368,123 @@ public class OrientDBQueryNodeModel extends NodeModel implements FlowVariablePro
 							OIdentifiable identifiable = it.next();
 							values.add(identifiable.getIdentity().toString());
 						}
-						json = Constants.OBJECT_MAPPER.writeValueAsString(values);
+						json = JaksonUtil.OBJECT_MAPPER.writeValueAsString(values);
 					} else if (value instanceof List || value instanceof Set) {
 						Collection col = (Collection) value;
 						if (!col.isEmpty()) {
 							Object firstValue = col.iterator().next();
 							logger.info(col.iterator().next().getClass().getName());
 							if (firstValue instanceof OResultInternal) {
-								//Orientdb schema class
+								// Orientdb schema class
 								@SuppressWarnings("unused")
-								Collection<OResultInternal> typeColl = col;	
+								Collection<OResultInternal> typeColl = col;
 								OResultInternal i = typeColl.iterator().next();
 								StringBuilder buffer = new StringBuilder(10_000);
 								buffer.append("[");
-								buffer.append(typeColl.stream().map((OResultInternal ori)->{return ori.toJSON();}).collect(Collectors.joining(",")));
+								buffer.append(typeColl.stream().map((OResultInternal ori) -> {
+									return ori.toJSON();
+								}).collect(Collectors.joining(",")));
 								buffer.append("]");
 								json = buffer.toString();
 							} else {
-								json = Constants.OBJECT_MAPPER.writeValueAsString(value);
-							}							
+								json = JaksonUtil.OBJECT_MAPPER.writeValueAsString(value);
+							}
 						}
 					} else if (value instanceof Map) {
 						Map map = (Map) value;
 						StringBuilder buffer = new StringBuilder(10_000);
 						buffer.append("{");
-						for (Iterator<Entry<Object,Object>> it = map.entrySet().iterator();it.hasNext();) {
+						for (Iterator<Entry<Object, Object>> it = map.entrySet().iterator(); it.hasNext();) {
 							Map.Entry<Object, Object> entry = it.next();
-							logger.info("key : "+Constants.OBJECT_MAPPER.writeValueAsString(entry.getKey()));
-							buffer.append(Constants.OBJECT_MAPPER.writeValueAsString(entry.getKey())).append(":");
-							logger.info("value : "+entry.getValue().getClass().getName());
+							logger.info("key : " + JaksonUtil.OBJECT_MAPPER.writeValueAsString(entry.getKey()));
+							buffer.append(JaksonUtil.OBJECT_MAPPER.writeValueAsString(entry.getKey())).append(":");
+							logger.info("value : " + entry.getValue().getClass().getName());
 							if (entry.getValue() instanceof OResultInternal) {
-								//value if object
-								OResultInternal element = (OResultInternal) entry.getValue() ;
-								buffer.append(element.toJSON())	;							
+								// value if object
+								OResultInternal element = (OResultInternal) entry.getValue();
+								buffer.append(element.toJSON());
 							} else {
-								buffer.append(Constants.OBJECT_MAPPER.writeValueAsString(entry.getValue()));
+								buffer.append(JaksonUtil.OBJECT_MAPPER.writeValueAsString(entry.getValue()));
 							}
 							if (it.hasNext()) {
 								buffer.append(", ");
-							}							
+							}
 						}
 						buffer.append("}");
 						json = buffer.toString();
-						logger.info("map json : "+json);
+						logger.info("map json : " + json);
 					} else {
-						json = Constants.OBJECT_MAPPER.writeValueAsString(value);
+						json = JaksonUtil.OBJECT_MAPPER.writeValueAsString(value);
 					}
 					cell = Constants.JSON_CELL_FACTORY.create(json, true);
 				} catch (Exception e) {
 					throw new RuntimeException("Cannot process JSON", e);
 				}
 
-			} else if (dataType.equals(ListCell.getCollectionType(StringCell.TYPE))) {
-				//@depricated
+			} else if (dataType.getCellClass().equals(ListCell.class)) {
 				Object field = result.getProperty(fieldName);
-				List<StringCell> cells  = new LinkedList<>();
-				List values = null;
-				if (field instanceof ORidBag) {
-					values = new LinkedList<>();
-					ORidBag ridBag = (ORidBag) field;
-					Iterator<OIdentifiable> it =  ridBag.iterator();
-					while (it.hasNext()) {
-						OIdentifiable identifiable = it.next();
-						values.add(identifiable.getIdentity().toString());
-					}
-				} else if (field instanceof List) {
-					values = (List) field;									
-				}	else if (field instanceof Set) {
-					values = new LinkedList((Set) field);									
-				}			
-				if (values!=null) {
-				for (Object value : values) {
-					cells.add(new StringCell(value.toString()));
-				}				
-				cell = CollectionCellFactory.createListCell(cells);
-				} else {
-					cell = new MissingCell("No value");
-				}
-			} 
-			else {
-				logger.warnWithFormat("unsupported dataType name : %s . class: %s .field: %s ",dataType.getName(), dataType, fieldName);
+				cell = createCollectionCell(field, dataType);
+			} else {
+				logger.warnWithFormat("unsupported dataType name : %s . class: %s .field: %s ", dataType.getName(),
+						dataType, fieldName);
 			}
-			
-		}
-    	return cell;
-    }
-    
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected void reset() {
-    	setConfiguredTableSpec(null);
-    }
 
-    
-    @Override
+		}
+		return cell;
+	}
+
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	private DataCell createCollectionCell(Object field, DataType listCell) {
+		logger.info("CollectionElementType :" + listCell.getCollectionElementType());
+		DataCell cell = null;
+		List<? super DataCell> cells = new LinkedList<>();
+		List values = null;
+		if (field instanceof ORidBag) {
+			values = new LinkedList<>();
+			ORidBag ridBag = (ORidBag) field;
+			Iterator<OIdentifiable> it = ridBag.iterator();
+			while (it.hasNext()) {
+				OIdentifiable identifiable = it.next();
+				values.add(identifiable.getIdentity().toString());
+			}
+		} else if (field instanceof List) {
+			values = (List) field;
+		} else if (field instanceof Set) {
+			values = new LinkedList((Set) field);
+		}
+		if (values != null) {
+			for (Object value : values) {
+				if (value instanceof String) {
+					cells.add(new StringCell((String) value));
+				} else if (value instanceof Integer) {
+					cells.add(new IntCell((Integer) value));
+				} else if (value instanceof Long) {
+					cells.add(new LongCell((Long) value));
+				} else if (value instanceof Boolean) {
+					cells.add(BooleanCell.get((Boolean) value));
+				} else if (value instanceof Double) {
+					cells.add(new DoubleCell((Double) value));
+				}else if (value instanceof Date) {
+					Date d = (Date) value;
+					cells.add(createCell(d, new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.S")));
+				}
+			}
+			cell = CollectionCellFactory.createListCell((Collection<? extends DataCell>) cells);
+		} else {
+			cell = new MissingCell("No value");
+		}
+		return cell;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	protected void reset() {
+		setConfiguredTableSpec(null);
+	}
+
+	@Override
 	protected PortObjectSpec[] configure(PortObjectSpec[] inSpecs) throws InvalidSettingsException {
 		if (inSpecs == null || inSpecs.length < 1 || inSpecs[ORIENTDB_CONNECTION_INDEX] == null) {
 			throw new InvalidSettingsException("No required input available!");
@@ -473,17 +496,17 @@ public class OrientDBQueryNodeModel extends NodeModel implements FlowVariablePro
 			throw new InvalidSettingsException("OrientDBConnection node not configured!");
 		}
 		DataTableSpec tableTableSpec = (DataTableSpec) inSpecs[DATA_TABLE_INDEX];
-		boolean useCommandFromTableColumn = (tableTableSpec!=null);
+		boolean useCommandFromTableColumn = (tableTableSpec != null);
 		if (useCommandFromTableColumn) {
 			m_schema_source.setStringValue(OrientDBQueryNodeDialog.TO_JSON_SCHEMA_SOURCE);
 		}
-				
+
 		logger.infoWithFormat("useCommandFromTableColumn : %s", useCommandFromTableColumn);
-		
-		CredentionalUtil.UserLogin userLogin = CredentionalUtil.getUserLoginInfo(connectionSettings.getUserName(), connectionSettings.getPassword(),
-				connectionSettings.getCredName(), getCredentialsProvider());
-		try (ODatabasePool orientDBPool = new ODatabasePool(connectionSettings.getDbUrl(), connectionSettings.getDbName(),
-				userLogin.getLogin(), userLogin.getDecryptedPassword())) {
+
+		CredentionalUtil.UserLogin userLogin = CredentionalUtil.getUserLoginInfo(connectionSettings.getUserName(),
+				connectionSettings.getPassword(), connectionSettings.getCredName(), getCredentialsProvider());
+		try (ODatabasePool orientDBPool = new ODatabasePool(connectionSettings.getDbUrl(),
+				connectionSettings.getDbName(), userLogin.getLogin(), userLogin.getDecryptedPassword())) {
 			List<DataColumnSpec> columns = defineColumns(orientDBPool);
 			if (useCommandFromTableColumn) {
 				List<DataColumnSpec> currentColumns = new LinkedList<DataColumnSpec>();
@@ -498,10 +521,14 @@ public class OrientDBQueryNodeModel extends NodeModel implements FlowVariablePro
 
 		return new PortObjectSpec[] { getConfiguredTableSpec(), orientDbSpec };
 	}
-    
-    private List<DataColumnSpec>  defineColumns(ODatabasePool orientDBPool) {
-    	List<DataColumnSpec> columns = new LinkedList<DataColumnSpec>();
+
+	@SuppressWarnings("rawtypes")
+	private List<DataColumnSpec> defineColumns(ODatabasePool orientDBPool) {
+		List<DataColumnSpec> columns = new LinkedList<DataColumnSpec>();
+		// map between field name and type
 		LinkedHashMap<String, OType> fieldTypeMap = new LinkedHashMap<>();
+		// map between field name and type of collection's value
+		LinkedHashMap<String, OType> collectionValueFieldTypeMap = new LinkedHashMap<>();
 		try (ODatabaseSession databaseSession = orientDBPool.acquire()) {
 			if (m_schema_source.getStringValue().equals(OrientDBQueryNodeDialog.DEFAUT_SCHEMA_SOURCE)) {
 				logger.info("Using query as schema info");
@@ -516,17 +543,8 @@ public class OrientDBQueryNodeModel extends NodeModel implements FlowVariablePro
 							if (resultSet.hasNext()) {
 								OResult result = resultSet.next();
 								for (String propertyName : result.getPropertyNames()) {
-									logger.infoWithFormat("propertyName: %s", propertyName);
-									if (result.hasProperty(propertyName)) {
-										Optional propertyValueOpt = Optional.ofNullable(result.getProperty(propertyName));
-										if (propertyValueOpt.isPresent()) {
-											Class propertyValueClass = propertyValueOpt.get().getClass();
-											logger.infoWithFormat("propertyValueClass: %s", propertyValueClass);
-											OType orientDBType = OType.getTypeByClass(propertyValueClass);
-											logger.infoWithFormat("orientDBType: %s ", orientDBType);
-											fieldTypeMap.put(propertyName, orientDBType);
-										}
-									}
+									analyseQueryProperty(fieldTypeMap, collectionValueFieldTypeMap, result,
+											propertyName);
 								}
 							} else {
 								break;
@@ -535,52 +553,89 @@ public class OrientDBQueryNodeModel extends NodeModel implements FlowVariablePro
 					}
 				}
 				logger.infoWithFormat("fields with type : %s ", fieldTypeMap);
-				columns.addAll(prepareColumns(fieldTypeMap));
+				columns.addAll(prepareColumns(fieldTypeMap, collectionValueFieldTypeMap));
 			} else if (m_schema_source.getStringValue().equals(OrientDBQueryNodeDialog.TO_JSON_SCHEMA_SOURCE)) {
 				logger.info("Using schemaless");
-				columns.add( new DataColumnSpecCreator("result", JSONCell.TYPE).createSpec());				
+				columns.add(new DataColumnSpecCreator("result", JSONCell.TYPE).createSpec());
 			} else {
 				String orientdbClassName = m_schema_source.getStringValue();
-				logger.infoWithFormat("Using class %s as schema info",orientdbClassName);
+				logger.infoWithFormat("Using class %s as schema info", orientdbClassName);
 				OClass orientdbClass = databaseSession.getClass(orientdbClassName);
-				if (orientdbClass!=null) {
+				if (orientdbClass != null) {
 					for (OProperty property : orientdbClass.properties()) {
 						fieldTypeMap.put(property.getName(), property.getType());
-					}					
-				}	
-				columns.addAll(prepareColumns(fieldTypeMap));
+						if (property.getType().equals(OType.EMBEDDEDLIST)
+								|| property.getType().equals(OType.EMBEDDEDSET)) {
+							collectionValueFieldTypeMap.put(property.getName(), property.getLinkedType());
+						}
+					}
+				}
+				columns.addAll(prepareColumns(fieldTypeMap, collectionValueFieldTypeMap));
 			}
 			logger.infoWithFormat("fields with type : %s ", fieldTypeMap);
-			
+
 		} finally {
 			orientDBPool.close();
 		}
 		return columns;
-    }
-    
-    private List<DataColumnSpec> prepareColumns(Map<String, OType> fieldTypeMap) {
-    	List<DataColumnSpec> columns = new LinkedList<DataColumnSpec>();
-    	for (Map.Entry<String, OType> entry : fieldTypeMap.entrySet()) {
-    		
-    		logger.info("field "+entry.getKey()+"; value "+Mapping.mapToDataType(entry.getValue(),m_load_as_json.getBooleanValue())
-    		+"; show as json ? :"+m_load_as_json.getBooleanValue());
+	}
+
+	@SuppressWarnings("rawtypes")
+	private void analyseQueryProperty(LinkedHashMap<String, OType> fieldTypeMap,
+			LinkedHashMap<String, OType> collectionValueFieldTypeMap, OResult result, String propertyName) {
+		logger.infoWithFormat("propertyName: %s", propertyName);
+		if (result.hasProperty(propertyName)) {
+			Optional propertyValueOpt = Optional
+					.ofNullable(result.getProperty(propertyName));
+			if (propertyValueOpt.isPresent()) {
+				Class propertyValueClass = propertyValueOpt.get().getClass();
+				logger.infoWithFormat("propertyValueClass: %s", propertyValueClass);
+				OType orientDBType = OType.getTypeByClass(propertyValueClass);
+				logger.infoWithFormat("orientDBType: %s ", orientDBType);
+				fieldTypeMap.put(propertyName, orientDBType);
+				if (propertyValueOpt.get() instanceof List) {
+					// it is collection. we can try to get type of value
+					List list = (List) propertyValueOpt.get();
+					if (!list.isEmpty()) {
+						Object firstValue = list.get(0);
+						collectionValueFieldTypeMap.put(propertyName,
+								OType.getTypeByClass(firstValue.getClass()));
+					}
+
+				}
+			}
+		}
+	}
+
+	private List<DataColumnSpec> prepareColumns(Map<String, OType> fieldTypeMap,
+			Map<String, OType> collectionValueFieldTypeMap) {
+		logger.info("fields: " + fieldTypeMap.keySet());
+		logger.info("fields: " + collectionValueFieldTypeMap.keySet());
+		List<DataColumnSpec> columns = new LinkedList<DataColumnSpec>();
+		for (Map.Entry<String, OType> entry : fieldTypeMap.entrySet()) {
+
+			logger.info("field " + entry.getKey() + "; value "
+					+ Mapping.mapToDataType(entry.getValue(), collectionValueFieldTypeMap.get(entry.getKey()),
+							m_load_as_json.getBooleanValue())
+					+ "; show as json ? :" + m_load_as_json.getBooleanValue());
 			DataColumnSpec columnSpec = new DataColumnSpecCreator(entry.getKey(),
-					Mapping.mapToDataType(entry.getValue(),m_load_as_json.getBooleanValue())).createSpec();
+					Mapping.mapToDataType(entry.getValue(), collectionValueFieldTypeMap.get(entry.getKey()),
+							m_load_as_json.getBooleanValue())).createSpec();
 			columns.add(columnSpec);
 		}
-    	return columns;
-    }
-    
-    	/**
-     * {@inheritDoc}
-     */
-    @Override
-    protected void saveSettingsTo(final NodeSettingsWO settings) {   
-        m_query.saveSettingsTo(settings);
-        m_generate_rowid_by_rid.saveSettingsTo(settings);
-        m_schema_source.saveSettingsTo(settings);
-        m_use_parallel.saveSettingsTo(settings);
-        m_load_as_json.saveSettingsTo(settings);
+		return columns;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	protected void saveSettingsTo(final NodeSettingsWO settings) {
+		m_query.saveSettingsTo(settings);
+		m_generate_rowid_by_rid.saveSettingsTo(settings);
+		m_schema_source.saveSettingsTo(settings);
+		m_use_parallel.saveSettingsTo(settings);
+		m_load_as_json.saveSettingsTo(settings);
 		if (m_column_with_query.getStringValue() != null) {
 			m_column_with_query.saveSettingsTo(settings);
 		}
@@ -599,7 +654,7 @@ public class OrientDBQueryNodeModel extends NodeModel implements FlowVariablePro
 		try {
 			m_column_with_query.loadSettingsFrom(settings);
 		} catch (InvalidSettingsException e) {
-			logger.info("Property "+OrientDBQueryNodeDialog.CFGKEY_QUERY_FIELD+" isn't loaded!");
+			logger.info("Property " + OrientDBQueryNodeDialog.CFGKEY_QUERY_FIELD + " isn't loaded!");
 		}
 
 	}
@@ -617,39 +672,33 @@ public class OrientDBQueryNodeModel extends NodeModel implements FlowVariablePro
 		if (m_column_with_query.getStringValue() != null) {
 			m_column_with_query.validateSettings(settings);
 		}
-    }
-    
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected void loadInternals(final File internDir,
-            final ExecutionMonitor exec) throws IOException,
-            CanceledExecutionException {        
-    	logger.info(" call loadInternals ");
+	}
 
-    }
-    
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected void saveInternals(final File internDir,
-            final ExecutionMonitor exec) throws IOException,
-            CanceledExecutionException {       
-    	logger.info(" call saveInternals ");
-    }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	protected void loadInternals(final File internDir, final ExecutionMonitor exec)
+			throws IOException, CanceledExecutionException {
+		logger.info(" call loadInternals ");
 
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	protected void saveInternals(final File internDir, final ExecutionMonitor exec)
+			throws IOException, CanceledExecutionException {
+		logger.info(" call saveInternals ");
+	}
 
 	private DataTableSpec getConfiguredTableSpec() {
 		return configuredTableSpec;
 	}
 
-
 	private void setConfiguredTableSpec(DataTableSpec configuredTableSpec) {
 		this.configuredTableSpec = configuredTableSpec;
 	}
-    
 
 }
-
