@@ -1,6 +1,9 @@
 package se.redfield.node.port.orientdb.command;
 
+import java.util.Date;
+
 import org.knime.core.data.DataCell;
+import org.knime.core.data.date.DateAndTimeCell;
 import org.knime.core.data.def.BooleanCell;
 import org.knime.core.data.def.DoubleCell;
 import org.knime.core.data.def.IntCell;
@@ -26,6 +29,9 @@ public class DataTypeUtil {
 		} else if (dataCell instanceof DoubleCell) {
 			DoubleCell cell = (DoubleCell) dataCell;
 			result = cell.getDoubleValue();
+		}else if (dataCell instanceof DateAndTimeCell) {
+			DateAndTimeCell cell = (DateAndTimeCell) dataCell;
+			result = new Date(cell.getUTCTimeInMillis());
 		}
 
 		return result;
