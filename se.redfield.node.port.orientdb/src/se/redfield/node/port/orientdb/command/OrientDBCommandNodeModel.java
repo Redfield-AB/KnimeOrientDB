@@ -58,6 +58,7 @@ import org.knime.core.data.json.JSONValue;
 import org.knime.core.data.time.localdate.LocalDateCell;
 import org.knime.core.data.time.localdatetime.LocalDateTimeCell;
 import org.knime.core.data.time.zoneddatetime.ZonedDateTimeCell;
+import org.knime.core.data.uri.URIDataCell;
 import org.knime.core.node.BufferedDataContainer;
 import org.knime.core.node.BufferedDataTable;
 import org.knime.core.node.CanceledExecutionException;
@@ -463,7 +464,7 @@ public class OrientDBCommandNodeModel extends NodeModel implements FlowVariableP
 						return DataTypeUtil.getDataCellValue(dc);
 					}).collect(Collectors.toSet());
 					saveElement.setProperty(columnName, values);
-				} else {
+				}  else {
 					// @TODO support other types
 					throw new UnsupportedOperationException("Unsupported cell type " + dataType + " (class : "
 							+ dataType.getCellClass().getName() + ") !");

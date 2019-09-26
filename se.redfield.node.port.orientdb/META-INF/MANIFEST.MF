@@ -22,6 +22,7 @@ Require-Bundle: org.eclipse.core.runtime,
  com.fasterxml.jackson.core.jackson-core;bundle-version="2.8.9",
  com.fasterxml.jackson.core.jackson-databind;bundle-version="2.8.9",
  com.fasterxml.jackson.datatype.jackson-datatype-jdk8;bundle-version="2.8.9",
- org.glassfish.javax.json
+ org.glassfish.javax.json,
+ org.knime.core.data.uritype;bundle-version="3.7.0"
 Bundle-ActivationPolicy: lazy
 Export-Package: se.redfield.node.port.orientdb

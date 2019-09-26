@@ -9,6 +9,7 @@ import org.knime.core.data.def.DoubleCell;
 import org.knime.core.data.def.IntCell;
 import org.knime.core.data.def.LongCell;
 import org.knime.core.data.def.StringCell;
+import org.knime.core.data.uri.URIDataCell;
 
 public class DataTypeUtil {
 
@@ -32,6 +33,9 @@ public class DataTypeUtil {
 		}else if (dataCell instanceof DateAndTimeCell) {
 			DateAndTimeCell cell = (DateAndTimeCell) dataCell;
 			result = new Date(cell.getUTCTimeInMillis());
+		}else if (dataCell instanceof URIDataCell) {
+			URIDataCell cell = (URIDataCell) dataCell;
+			result = cell.getStringValue();
 		}
 
 		return result;
