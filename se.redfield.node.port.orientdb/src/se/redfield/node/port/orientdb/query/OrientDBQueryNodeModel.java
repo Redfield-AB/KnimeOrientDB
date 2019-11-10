@@ -36,6 +36,7 @@ import org.knime.core.data.MissingCell;
 import org.knime.core.data.RowKey;
 import org.knime.core.data.collection.CollectionCellFactory;
 import org.knime.core.data.collection.ListCell;
+import org.knime.core.data.collection.SetCell;
 import org.knime.core.data.container.CloseableRowIterator;
 import org.knime.core.data.date.DateAndTimeCell;
 import org.knime.core.data.date.DateAndTimeCellFactory;
@@ -413,7 +414,7 @@ public class OrientDBQueryNodeModel extends NodeModel implements FlowVariablePro
 					throw new RuntimeException("Cannot process JSON", e);
 				}
 
-			} else if (dataType.getCellClass().equals(ListCell.class)) {
+			} else if (dataType.getCellClass().equals(ListCell.class) || dataType.getCellClass().equals(SetCell.class)) {
 				Object field = result.getProperty(fieldName);
 				cell = createCollectionCell(field, dataType);
 			} else {
@@ -458,7 +459,7 @@ public class OrientDBQueryNodeModel extends NodeModel implements FlowVariablePro
 					cells.add(new DoubleCell((Double) value));
 				}else if (value instanceof Date) {
 					Date d = (Date) value;
-					cells.add(createCell(d, new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.S")));
+					cells.add(createCell(d, new SimpleDateFormat(Constants.DATE_TIME_FORMAT)));
 				}
 			}
 			cell = CollectionCellFactory.createListCell((Collection<? extends DataCell>) cells);

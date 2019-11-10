@@ -14,5 +14,7 @@ public class Constants {
 			Arrays.asList("OSchedule", "OSequence", "OFunction", "_studio", "OUser", "OFunction", "OGeometryCollection",
 					"OIdentity", "OLineString", "OMultiLineString", "OMultiPoint", "OMultiPolygon", "OPoint",
 					"OPolygon", "ORectangle", "ORestricted", "ORole", "OSequence", "OShape", "OTriggered")));
+	
+	public static final String DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.S";
 
 }

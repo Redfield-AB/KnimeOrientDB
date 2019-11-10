@@ -5,8 +5,11 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.knime.base.util.flowvariable.FlowVariableProvider;
 import org.knime.base.util.flowvariable.FlowVariableResolver;
@@ -14,6 +17,8 @@ import org.knime.core.data.DataCell;
 import org.knime.core.data.DataColumnSpecCreator;
 import org.knime.core.data.DataRow;
 import org.knime.core.data.DataTableSpec;
+import org.knime.core.data.collection.ListCell;
+import org.knime.core.data.collection.SetCell;
 import org.knime.core.data.container.CloseableRowIterator;
 import org.knime.core.data.container.RowAppender;
 import org.knime.core.data.def.BooleanCell;
@@ -48,6 +53,7 @@ import com.orientechnologies.orient.core.sql.executor.OResult;
 import com.orientechnologies.orient.core.sql.executor.OResultSet;
 
 import se.redfield.node.port.orientdb.Constants;
+import se.redfield.node.port.orientdb.command.DataTypeUtil;
 import se.redfield.node.port.orientdb.connection.OrientDBConnectionPortObject;
 import se.redfield.node.port.orientdb.connection.OrientDBConnectionPortObjectSpec;
 import se.redfield.node.port.orientdb.connection.OrientDBConnectionSettings;
@@ -79,7 +85,7 @@ public class OrientDBExecuteNodeModel extends NodeModel implements FlowVariableP
 	static final int ORIENTDB_CONNECTION_INDEX = 2;
 	static final int DATA_TABLE_INDEX = 1;
 	
-	private Pattern COLUMN_NAME_PATTER = Pattern.compile("(\\$\\$\\(\\S+\\)\\$\\$)");
+	private Pattern COLUMN_NAME_PATTER = Pattern.compile("(\\$\\$\\([\\d\\w]+\\)\\$\\$),*");
 
 	private DataTableSpec configuredTableSpec;
 	private OrientDBConnectionSettings connectionSettings;
@@ -182,29 +188,54 @@ public class OrientDBExecuteNodeModel extends NodeModel implements FlowVariableP
 		do {
 			Matcher matcher = COLUMN_NAME_PATTER.matcher(batchRow);
 			findGroup = matcher.find();
+			logger.info("findGroup:"+ findGroup);
 			if (findGroup) {
+				logger.info("matcher.groupCount: "+ matcher.groupCount());
 				String group = matcher.group(0);
+				logger.info("group: "+ group);
 				String columnName = getColumnName(group);
+				logger.info("columnName:"+ columnName);
 				DataCell dataCell = dataRow.getCell(dataTable.getDataTableSpec().findColumnIndex(columnName));
 				String value = "null";
 				if (dataCell != null && !dataCell.isMissing()) {
-					if (dataCell.getType().equals(StringCell.TYPE)) {
-						value = ((StringCell) dataCell).getStringValue();
-					} else if (dataCell.getType().equals(IntCell.TYPE)) {
-						value = String.valueOf(((IntCell) dataCell).getIntValue());
-					} else if (dataCell.getType().equals(BooleanCell.TYPE)) {
-						value = String.valueOf(((BooleanCell) dataCell).getBooleanValue());
-					} else if (dataCell.getType().equals(LongCell.TYPE)) {
-						value = String.valueOf(((LongCell) dataCell).getLongValue());
-					} else {
-						throw new UnsupportedOperationException(
-								"Unsupported cell type " + dataCell.getType() + " !");
-					}
+					value = getStringValue(dataCell);
+				}
+				if (group.endsWith(",")) {
+					value = value+",";					
 				}
 				batchRow = batchRow.replace(group, value);
 			}
 		} while (findGroup);
 		return batchRow;
+	}
+	
+	private String getStringValue(DataCell dataCell) {		
+		String value = "null";
+		if (dataCell.getType().getCellClass().equals(ListCell.class)) {
+			// it is list
+			logger.info("it is list");
+			ListCell cell = (ListCell) dataCell;
+			value = "[" + cell.stream().map((DataCell dc) -> {
+				return DataTypeUtil.getDataCellValue(dc);
+			}).map(new StringValuePreparer()).collect(Collectors.joining(",")) + "]";
+			return value;
+		} else if (dataCell.getType().getCellClass().equals(SetCell.class))  {
+			logger.info("it is set");
+			SetCell cell = (SetCell) dataCell;
+			value = "[" + cell.stream().map((DataCell dc) -> {
+				return DataTypeUtil.getDataCellValue(dc);
+			}).map(new StringValuePreparer()).collect(Collectors.joining(",")) + "]";
+			return value;
+		} 
+		Object objValue = DataTypeUtil.getDataCellValue(dataCell);
+		if (objValue == null) {
+			throw new UnsupportedOperationException("Unsupported cell type " + dataCell.getType() + " !");
+		} else if (objValue instanceof String) {
+			value = (String) objValue;
+		} else {
+			value = objValue.toString();
+		}		
+		return value;
 	}
 
 	private Collection<String> generateBatchScript(BufferedDataTable dataTable) {
@@ -221,7 +252,6 @@ public class OrientDBExecuteNodeModel extends NodeModel implements FlowVariableP
 		try (CloseableRowIterator rowItertor = dataTable.iterator()) {
 			while (rowItertor.hasNext()) {
 				DataRow dataRow = rowItertor.next();
-//				logger.info("==iteration==");
 				String batchRow =prepareBatchRow(template,dataRow,dataTable);
 				batchScriptBuffer.append(batchRow).append(";").append(System.lineSeparator());
 				rowCount++;
@@ -238,6 +268,7 @@ public class OrientDBExecuteNodeModel extends NodeModel implements FlowVariableP
 				batchScriptBuffer.setLength(0); // clear buffer
 			}
 		}
+		logger.infoWithFormat("=====batches: %s", batches);
 		
 		return batches;
 	}
@@ -255,7 +286,9 @@ public class OrientDBExecuteNodeModel extends NodeModel implements FlowVariableP
 	
 
 	private String getColumnName(String group) {
-		return group.substring(3, group.length()-3);
+		int startPos = group.trim().indexOf("$$(");
+		int endPos = group.trim().lastIndexOf(")$$");
+		return group.substring(startPos+3, endPos);
 	}
 
 	/**
