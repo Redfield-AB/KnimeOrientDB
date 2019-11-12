@@ -66,6 +66,7 @@ import org.knime.core.node.port.PortType;
 import com.orientechnologies.orient.core.db.ODatabasePool;
 import com.orientechnologies.orient.core.db.ODatabaseSession;
 import com.orientechnologies.orient.core.db.record.OIdentifiable;
+import com.orientechnologies.orient.core.db.record.OTrackedSet;
 import com.orientechnologies.orient.core.db.record.ridbag.ORidBag;
 import com.orientechnologies.orient.core.id.ORID;
 import com.orientechnologies.orient.core.id.ORecordId;
@@ -287,10 +288,12 @@ public class OrientDBQueryNodeModel extends NodeModel implements FlowVariablePro
 	private void processOResult(BufferedDataContainer container, SimpleDateFormat dateFormat,
 			SimpleDateFormat dateTimeFormat, DataTableSpec dataTableSpec, OResult result, AtomicLong rowCounter) {
 		List<DataCell> cells = new LinkedList<>();
+		logger.info("processing OResult. "+result.toJSON());
 		if (m_schema_source.getStringValue().equals(OrientDBQueryNodeDialog.TO_JSON_SCHEMA_SOURCE)) {
 			cells.add(Constants.JSON_CELL_FACTORY.createCell(result.toJSON()));
 		} else {
 			for (String columnName : dataTableSpec.getColumnNames()) {
+				logger.info("processing columnName "+columnName);
 				DataColumnSpec columnSpec = dataTableSpec.getColumnSpec(columnName);
 				cells.add(mapToDataCell(result, columnName, columnSpec, dateFormat, dateTimeFormat));
 			}
@@ -321,6 +324,8 @@ public class OrientDBQueryNodeModel extends NodeModel implements FlowVariablePro
 	private DataCell mapToDataCell(OResult result, String fieldName, DataColumnSpec columnSpec,
 			SimpleDateFormat dateFormat, SimpleDateFormat dateTimeFormat) {
 		DataCell cell = null;
+		logger.info("fieldName exists ? :" + (result.getProperty(fieldName) != null));
+		logger.info("fieldNames in the result :" + result.getPropertyNames());
 		if (result.getProperty(fieldName) == null) {
 			cell = new MissingCell("No value");
 		} else {
@@ -364,9 +369,11 @@ public class OrientDBQueryNodeModel extends NodeModel implements FlowVariablePro
 						json = JaksonUtil.OBJECT_MAPPER.writeValueAsString(values);
 					} else if (value instanceof List || value instanceof Set) {
 						Collection col = (Collection) value;
+						logger.info("col.size :"+col.size());
 						if (!col.isEmpty()) {
 							Object firstValue = col.iterator().next();
-							logger.info(col.iterator().next().getClass().getName());
+							logger.info("firstValue :"+firstValue.getClass().getName());
+							logger.info("is OResultInternal ? :"+(firstValue instanceof OResultInternal));
 							if (firstValue instanceof OResultInternal) {
 								// Orientdb schema class
 								@SuppressWarnings("unused")
@@ -379,7 +386,7 @@ public class OrientDBQueryNodeModel extends NodeModel implements FlowVariablePro
 								}).collect(Collectors.joining(",")));
 								buffer.append("]");
 								json = buffer.toString();
-							} else {
+							}  else {
 								json = JaksonUtil.OBJECT_MAPPER.writeValueAsString(value);
 							}
 						}
@@ -406,9 +413,13 @@ public class OrientDBQueryNodeModel extends NodeModel implements FlowVariablePro
 						buffer.append("}");
 						json = buffer.toString();
 						logger.info("map json : " + json);
+					} if (value instanceof OTrackedSet) {	
+						logger.info("=OTrackedSet=");
+						
 					} else {
 						json = JaksonUtil.OBJECT_MAPPER.writeValueAsString(value);
 					}
+					logger.info("result json : " + json);
 					cell = Constants.JSON_CELL_FACTORY.create(json, true);
 				} catch (Exception e) {
 					throw new RuntimeException("Cannot process JSON", e);
@@ -457,9 +468,11 @@ public class OrientDBQueryNodeModel extends NodeModel implements FlowVariablePro
 					cells.add(BooleanCell.get((Boolean) value));
 				} else if (value instanceof Double) {
 					cells.add(new DoubleCell((Double) value));
-				}else if (value instanceof Date) {
+				} else if (value instanceof Date) {
 					Date d = (Date) value;
 					cells.add(createCell(d, new SimpleDateFormat(Constants.DATE_TIME_FORMAT)));
+				} else {
+					logger.info("!!!!!value :" + value.getClass().getName());
 				}
 			}
 			cell = CollectionCellFactory.createListCell((Collection<? extends DataCell>) cells);

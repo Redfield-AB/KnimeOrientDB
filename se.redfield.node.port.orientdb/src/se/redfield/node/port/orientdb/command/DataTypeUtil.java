@@ -11,6 +11,8 @@ import org.knime.core.data.def.DoubleCell;
 import org.knime.core.data.def.IntCell;
 import org.knime.core.data.def.LongCell;
 import org.knime.core.data.def.StringCell;
+import org.knime.core.data.time.localdate.LocalDateCell;
+import org.knime.core.data.time.localdatetime.LocalDateTimeCell;
 
 public class DataTypeUtil {
 
@@ -41,7 +43,13 @@ public class DataTypeUtil {
 		} else if (dataCell instanceof StringValue) {
 			StringValue cell = (StringValue) dataCell;
 			result = cell.getStringValue();
-		} 
+		} else if (dataCell instanceof LocalDateTimeCell) {
+			LocalDateTimeCell cell = (LocalDateTimeCell) dataCell;
+			result = cell.getStringValue();
+		} else if (dataCell instanceof LocalDateCell) {
+			LocalDateCell cell = (LocalDateCell) dataCell;
+			result = cell.getStringValue();
+		}
 		return result;
 	}
 
