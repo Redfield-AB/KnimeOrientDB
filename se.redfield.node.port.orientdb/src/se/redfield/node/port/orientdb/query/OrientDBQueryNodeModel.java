@@ -227,16 +227,21 @@ public class OrientDBQueryNodeModel extends NodeModel implements FlowVariablePro
 				try (ODatabaseSession databaseSession = orientDBPool.acquire()) {
 
 					logger.info("Try to execute query ...");
-					String query = FlowVariableResolver.parse(m_query.getStringValue(), this);
-					try (OResultSet resultSet = databaseSession.query(query)) {
-						container = exec.createDataContainer(dataTableSpec);
-						while (resultSet.hasNext()) {
-							OResult result = resultSet.next();
-							processOResult(container, dateFormat, dateTimeFormat, dataTableSpec, result, rowCounter);
-							// check if the execution monitor was canceled
-							exec.checkCanceled();
-							rowCounter.incrementAndGet();
-							exec.setProgress("Loaded " + rowCounter + " row");
+					if (m_query.getStringValue() == null) {
+						logger.warn("Query is NULL!");
+					} else {
+						String query = FlowVariableResolver.parse(m_query.getStringValue(), this);
+						try (OResultSet resultSet = databaseSession.query(query)) {
+							container = exec.createDataContainer(dataTableSpec);
+							while (resultSet.hasNext()) {
+								OResult result = resultSet.next();
+								processOResult(container, dateFormat, dateTimeFormat, dataTableSpec, result,
+										rowCounter);
+								// check if the execution monitor was canceled
+								exec.checkCanceled();
+								rowCounter.incrementAndGet();
+								exec.setProgress("Loaded " + rowCounter + " row");
+							}
 						}
 					}
 
