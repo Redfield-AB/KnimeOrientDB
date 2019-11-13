@@ -32,6 +32,7 @@ import javax.json.JsonString;
 import javax.json.JsonValue;
 import javax.json.JsonValue.ValueType;
 
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.knime.base.util.flowvariable.FlowVariableProvider;
 import org.knime.base.util.flowvariable.FlowVariableResolver;
 import org.knime.core.data.DataCell;
@@ -402,7 +403,7 @@ public class OrientDBCommandNodeModel extends NodeModel implements FlowVariableP
 	}
     
     private String prepareErrorMessage(Exception e) {
-    	String json = "{\"result\":\"command return error\",\"error\" : \""+e.getMessage()+"\"}";
+    	String json = "{\"result\":\"command return error\",\"error\" : \""+StringEscapeUtils.escapeJson(e.getMessage())+"\"}";
     	return json;
     }
     
